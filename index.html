@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#dff4ff">
+  <meta name="description" content="La Fabrique à Nuages, un mini jeu incrémental relaxant.">
+  <title>La Fabrique à Nuages</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+  <main class="game-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">☁</span><div><strong>La Fabrique à Nuages</strong><small>Prototype météo-incrémental</small></div></div>
+      <div class="header-actions">
+        <span class="time-status" id="timeStatus" title="Source utilisée pour calculer les gains hors ligne"><i></i><span>Synchronisation…</span></span>
+        <button class="icon-button" id="soundButton" type="button" aria-label="Désactiver les sons" aria-pressed="true">♪</button>
+        <button class="icon-button" id="helpButton" type="button" aria-label="Afficher l'aide">?</button>
+      </div>
+    </header>
+
+    <section class="resource-card" aria-live="polite">
+      <span class="drop-icon">◆</span>
+      <div><strong id="dropCount">0</strong><span>gouttes</span></div>
+      <p><b id="perSecond">0</b> par seconde</p>
+    </section>
+
+    <div class="layout">
+      <section class="cloud-panel" aria-label="Production manuelle">
+        <div class="weather-label"><span id="weatherDot"></span><b id="weatherText">Ciel calme</b><small id="weatherTimer"></small></div>
+        <button class="cloud-button" id="cloudButton" type="button" aria-label="Presser le nuage pour récolter des gouttes">
+          <span class="cloud-face"><i class="eye left"></i><i class="eye right"></i><i class="mouth"></i></span>
+        </button>
+        <p class="click-value">Presse le nuage <b>+<span id="perClick">1</span></b></p>
+        <div class="pressure-wrap">
+          <div class="pressure-copy"><span>Pression</span><b id="pressureLabel">0 / 20</b></div>
+          <div class="pressure-bar" role="progressbar" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><i id="pressureFill"></i></div>
+          <small>Remplis la jauge pour déclencher une averse ×2.</small>
+        </div>
+        <div class="stats">
+          <div><span>Total récolté</span><b id="totalDrops">0</b></div>
+          <div><span>Temps de jeu</span><b id="playTime">0 min</b></div>
+        </div>
+      </section>
+
+      <section class="shop-panel" aria-label="Boutique d'automates">
+        <div class="shop-head">
+          <div><p class="eyebrow">Atelier météo</p><h1>Automates</h1></div>
+          <div class="buy-modes" aria-label="Quantité d'achat">
+            <button type="button" data-mode="1" class="active">×1</button>
+            <button type="button" data-mode="10">×10</button>
+            <button type="button" data-mode="max">Max</button>
+          </div>
+        </div>
+        <div id="unitList" class="unit-list"></div>
+        <section class="upgrade-section">
+          <div class="section-title"><h2>Améliorations</h2><span id="upgradeCount">0 / 4</span></div>
+          <div id="upgradeList" class="upgrade-list"></div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="helpDialog">
+    <button class="dialog-close" id="closeHelp" type="button" aria-label="Fermer">×</button>
+    <p class="eyebrow">Mode d'emploi</p><h2>Fais pleuvoir les idées</h2>
+    <ol><li>Presse le nuage pour créer tes premières gouttes.</li><li>Achète des automates : ils produisent même sans cliquer.</li><li>Enchaîne 20 pressions pour activer une averse ×2 pendant 15 secondes.</li><li>Les améliorations se débloquent au fil de ta progression.</li></ol>
+    <p>La partie est sauvegardée automatiquement dans ton navigateur. Au retour, l'heure réseau calcule les gains produits hors ligne (jusqu'à 4 heures).</p>
+    <button class="reset-button" id="resetButton" type="button">Recommencer la partie</button>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>
