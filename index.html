@@ -3,75 +3,121 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#dff4ff">
-  <meta name="description" content="La Fabrique à Nuages, un mini jeu incrémental relaxant.">
+  <meta name="theme-color" content="#bdeaff">
+  <meta name="description" content="La Fabrique à Nuages, un jeu incrémental météorologique.">
   <title>La Fabrique à Nuages</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
+<body data-sky="0">
+  <div class="world" aria-hidden="true">
+    <div class="sun"></div><div class="stars"></div>
+    <div class="ambient-cloud c1"></div><div class="ambient-cloud c2"></div><div class="ambient-cloud c3"></div>
+    <div class="rain-layer" id="rainLayer"></div>
+    <div class="horizon"><i></i><i></i><i></i></div>
+  </div>
+
   <main class="game-shell">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">☁</span><div><strong>La Fabrique à Nuages</strong><small>Prototype météo-incrémental</small></div></div>
+      <a class="brand" href="#" aria-label="La Fabrique à Nuages, revenir en haut">
+        <span class="brand-mark">☁</span><span><strong>La Fabrique à Nuages</strong><small>L’empire météo</small></span>
+      </a>
+      <div class="top-resources">
+        <div class="mini-resource"><span>◈</span><p><small>Aubes</small><b id="dawnCount">0</b></p></div>
+        <div class="mini-resource"><span>↻</span><p><small>Cycles</small><b id="cycleCount">0</b></p></div>
+      </div>
       <div class="header-actions">
-        <span class="time-status" id="timeStatus" title="Source utilisée pour calculer les gains hors ligne"><i></i><span>Synchronisation…</span></span>
+        <span class="time-status" id="timeStatus" title="Source de l’heure"><i></i><span>Synchronisation…</span></span>
         <button class="icon-button" id="soundButton" type="button" aria-label="Désactiver les sons" aria-pressed="true">♪</button>
-        <button class="icon-button" id="helpButton" type="button" aria-label="Afficher l'aide">?</button>
+        <button class="icon-button" id="helpButton" type="button" aria-label="Afficher l’aide">?</button>
       </div>
     </header>
 
     <section class="resource-card" aria-live="polite">
-      <span class="drop-icon">◆</span>
-      <div><strong id="dropCount">0</strong><span>gouttes</span></div>
-      <p><b id="perSecond">0</b> par seconde</p>
+      <span class="drop-gem">◆</span>
+      <div class="resource-main"><strong id="dropCount">0</strong><span>gouttes</span></div>
+      <div class="resource-rate"><span class="live-dot"></span><b id="perSecond">0</b> / seconde</div>
+      <div class="permanent-boost"><small>Bonus permanent</small><b id="permanentBoost">×1</b></div>
     </section>
 
     <div class="layout">
-      <section class="cloud-panel" aria-label="Production manuelle">
-        <div class="weather-label"><span id="weatherDot"></span><b id="weatherText">Ciel calme</b><small id="weatherTimer"></small></div>
-        <button class="cloud-button" id="cloudButton" type="button" aria-label="Presser le nuage pour récolter des gouttes">
-          <span class="cloud-face"><i class="eye left"></i><i class="eye right"></i><i class="mouth"></i></span>
-        </button>
-        <p class="click-value">Presse le nuage <b>+<span id="perClick">1</span></b></p>
+      <aside class="cloud-panel" aria-label="Production manuelle">
+        <div class="weather-label"><span></span><b id="weatherText">Ciel calme</b><small id="weatherTimer"></small></div>
+        <div class="cloud-stage">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <button class="cloud-button" id="cloudButton" type="button" aria-label="Presser le nuage pour récolter des gouttes">
+            <span class="cloud-face"><i class="eye left"></i><i class="eye right"></i><i class="mouth"></i><i class="cheek left"></i><i class="cheek right"></i></span>
+          </button>
+        </div>
+        <p class="click-value">Condensation manuelle <b>+<span id="perClick">1</span></b></p>
         <div class="pressure-wrap">
-          <div class="pressure-copy"><span>Pression</span><b id="pressureLabel">0 / 20</b></div>
-          <div class="pressure-bar" role="progressbar" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><i id="pressureFill"></i></div>
-          <small>Remplis la jauge pour déclencher une averse ×2.</small>
+          <div class="pressure-copy"><span>Pression atmosphérique</span><b id="pressureLabel">0 / 20</b></div>
+          <div class="pressure-bar" role="progressbar" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><i id="pressureFill"></i><em></em></div>
+          <small id="pressureHint">À 20 : averse ×2 pendant 15 secondes</small>
         </div>
         <div class="stats">
-          <div><span>Total récolté</span><b id="totalDrops">0</b></div>
+          <div><span>Cette ère</span><b id="runDrops">0</b></div>
+          <div><span>Depuis l’origine</span><b id="lifetimeDrops">0</b></div>
           <div><span>Temps de jeu</span><b id="playTime">0 min</b></div>
+          <div><span>Automates</span><b id="totalUnits">0</b></div>
         </div>
-      </section>
+        <button class="prestige-teaser" id="prestigeButton" type="button">
+          <span class="prestige-icon">◈</span><span><small>Cycle de l’Aube</small><strong id="prestigeTitle">Encore inaccessible</strong><em id="prestigeProgress">Atteins 1 Md de gouttes</em></span><b>→</b>
+        </button>
+      </aside>
 
-      <section class="shop-panel" aria-label="Boutique d'automates">
-        <div class="shop-head">
-          <div><p class="eyebrow">Atelier météo</p><h1>Automates</h1></div>
-          <div class="buy-modes" aria-label="Quantité d'achat">
-            <button type="button" data-mode="1" class="active">×1</button>
-            <button type="button" data-mode="10">×10</button>
-            <button type="button" data-mode="max">Max</button>
+      <section class="management-panel">
+        <nav class="tabs" aria-label="Gestion de la fabrique">
+          <button type="button" class="active" data-tab="automates"><span>⚙</span> Automates <b id="unlockedUnitsBadge">4 / 24</b></button>
+          <button type="button" data-tab="upgrades"><span>✦</span> Innovations <b id="upgradeBadge">0</b></button>
+          <button type="button" data-tab="records"><span>⌁</span> Archives</button>
+        </nav>
+
+        <div class="tab-page active" id="automatesPage">
+          <div class="panel-head">
+            <div><p class="eyebrow">Chaîne de production</p><h1>Automates météo</h1></div>
+            <div class="buy-modes" aria-label="Quantité d’achat">
+              <button type="button" data-mode="1" class="active">×1</button><button type="button" data-mode="10">×10</button><button type="button" data-mode="100">×100</button><button type="button" data-mode="max">Max</button>
+            </div>
           </div>
+          <div id="unitList" class="unit-list"></div>
         </div>
-        <div id="unitList" class="unit-list"></div>
-        <section class="upgrade-section">
-          <div class="section-title"><h2>Améliorations</h2><span id="upgradeCount">0 / 4</span></div>
+
+        <div class="tab-page" id="upgradesPage" hidden>
+          <div class="panel-head"><div><p class="eyebrow">Laboratoire</p><h1>Innovations disponibles</h1></div><p class="shop-note">Achetées = remplacées</p></div>
+          <div class="upgrade-summary"><span><b id="upgradeCount">0</b> innovations installées</span><span><b>384</b> paliers d’automates</span></div>
           <div id="upgradeList" class="upgrade-list"></div>
-        </section>
+          <div class="locked-preview"><h2>Prochaines recherches</h2><div id="lockedUpgradeList"></div></div>
+        </div>
+
+        <div class="tab-page" id="recordsPage" hidden>
+          <div class="panel-head"><div><p class="eyebrow">Observatoire</p><h1>Archives célestes</h1></div></div>
+          <div class="record-grid" id="recordGrid"></div>
+          <section class="milestone-map"><div class="section-title"><h2>Ascension de la fabrique</h2><span id="eraLabel">Ère 1</span></div><div id="eraTrack" class="era-track"></div></section>
+        </div>
       </section>
     </div>
   </main>
 
+  <dialog id="prestigeDialog" class="prestige-dialog">
+    <button class="dialog-close" data-close="prestigeDialog" type="button" aria-label="Fermer">×</button>
+    <div class="dawn-emblem">◈</div><p class="eyebrow">Nouveau cycle</p><h2>Déclencher l’Aube ?</h2>
+    <p id="prestigeDescription"></p>
+    <div class="prestige-equation"><div><small>Tu perds</small><b>Gouttes, automates<br>et innovations</b></div><span>→</span><div><small>Tu conserves</small><b id="prestigeReward">+1 Aube</b></div></div>
+    <p class="next-cycle" id="nextCycleInfo"></p>
+    <button class="primary-button" id="confirmPrestige" type="button">Commencer le nouveau cycle</button>
+  </dialog>
+
   <dialog id="helpDialog">
-    <button class="dialog-close" id="closeHelp" type="button" aria-label="Fermer">×</button>
-    <p class="eyebrow">Mode d'emploi</p><h2>Fais pleuvoir les idées</h2>
-    <ol><li>Presse le nuage pour créer tes premières gouttes.</li><li>Achète des automates : ils produisent même sans cliquer.</li><li>Enchaîne 20 pressions pour activer une averse ×2 pendant 15 secondes.</li><li>Les améliorations se débloquent au fil de ta progression.</li></ol>
-    <p>La partie est sauvegardée automatiquement dans ton navigateur. Au retour, l'heure réseau calcule les gains produits hors ligne (jusqu'à 4 heures).</p>
-    <button class="reset-button" id="resetButton" type="button">Recommencer la partie</button>
+    <button class="dialog-close" data-close="helpDialog" type="button" aria-label="Fermer">×</button>
+    <p class="eyebrow">Guide de l’observateur</p><h2>Une météo sans limite</h2>
+    <ol><li>Presse le nuage et construis tes premiers automates.</li><li>Chaque automate possède 16 paliers, de 1 à 2 500 exemplaires.</li><li>Les innovations apparaissent lorsque leurs conditions sont remplies, puis disparaissent après achat.</li><li>À 20 pressions, une averse multiplie temporairement toute la production.</li><li>Une fois l’objectif d’ère atteint, redémarre pour gagner une Aube et accélérer tous les cycles futurs.</li></ol>
+    <p>La sauvegarde est automatique. L’heure réseau restitue jusqu’à 12 heures de production hors ligne.</p>
+    <button class="reset-button" id="resetButton" type="button">Effacer définitivement la sauvegarde</button>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <div class="achievement" id="achievement" role="status" aria-live="polite" hidden><span>✦</span><div><small>Nouveau palier</small><b></b></div></div>
   <script src="app.js"></script>
 </body>
 </html>

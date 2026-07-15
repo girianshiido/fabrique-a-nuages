@@ -1,6 +1,6 @@
 # La Fabrique à Nuages
 
-Un petit jeu incrémental en français, inspiré de *Cookie Clicker* et *Adventure Capitalist*. Pressez le nuage, récoltez des gouttes et développez un atelier météo automatisé.
+Un jeu incrémental en français, inspiré de *Cookie Clicker* et *Adventure Capitalist*. Pressez le nuage, récoltez des gouttes et développez un empire météo automatisé à travers six ères.
 
 ## Jouer en local
 
@@ -12,7 +12,18 @@ Ouvrez simplement `index.html` dans un navigateur moderne. Le projet n'utilise n
 2. Dans **Settings → Pages**, choisissez **Deploy from a branch**.
 3. Sélectionnez la branche `main` et le dossier `/ (root)`, puis enregistrez.
 
-Le jeu inclut une sauvegarde automatique locale, des gains hors ligne limités à quatre heures, quatre automates, quatre améliorations et une mécanique d'averse temporaire. Au chargement, il consulte une horloge UTC publique pour calculer le temps écoulé sans dépendre de l'heure réglée sur l'appareil. Si le réseau est indisponible, l'heure locale prend automatiquement le relais.
+Le jeu inclut :
+
+- 24 automates révélés progressivement ;
+- 16 paliers d'amélioration par automate, soit 384 paliers ;
+- 20 innovations globales supplémentaires ;
+- des achats ×1, ×10, ×100 ou Max ;
+- un système de prestige infini fondé sur les Aubes ;
+- une ambiance visuelle qui évolue sur six ères ;
+- des averses temporaires, statistiques et animations ;
+- une sauvegarde automatique avec jusqu'à 12 heures de production hors ligne, extensibles par amélioration.
+
+Au chargement, le jeu consulte une horloge UTC publique pour calculer le temps écoulé sans dépendre de l'heure réglée sur l'appareil. Si le réseau est indisponible, l'heure locale prend automatiquement le relais.
 
 ## Fichiers
 
