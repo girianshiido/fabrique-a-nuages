@@ -7,7 +7,7 @@
   <meta name="description" content="La Fabrique à Nuages, un jeu incrémental météorologique.">
   <title>La Fabrique à Nuages</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body data-sky="0">
   <div class="world" aria-hidden="true">
@@ -23,8 +23,7 @@
         <span class="brand-mark">☁</span><span><strong>La Fabrique à Nuages</strong><small>L’empire météo</small></span>
       </a>
       <div class="top-resources">
-        <div class="mini-resource"><span>◈</span><p><small>Aubes</small><b id="dawnCount">0</b></p></div>
-        <div class="mini-resource"><span>↻</span><p><small>Cycles</small><b id="cycleCount">0</b></p></div>
+        <button class="mini-resource dawn-resource" id="dawnTreeButton" type="button" aria-label="Ouvrir l'arbre des Aubes"><span>◈</span><p><small>Aubes disponibles</small><b id="dawnCount">0</b></p></button>
       </div>
       <div class="header-actions">
         <span class="time-status" id="timeStatus" title="Source de l’heure"><i></i><span>Synchronisation…</span></span>
@@ -39,6 +38,10 @@
       <div class="resource-rate"><span class="live-dot"></span><b id="perSecond">0</b> / seconde</div>
       <div class="permanent-boost"><small>Bonus permanent</small><b id="permanentBoost">×1</b></div>
     </section>
+
+    <button class="event-banner" id="eventBanner" type="button" hidden>
+      <span class="event-icon" id="eventIcon">🌈</span><span><small>Phénomène rare</small><strong id="eventTitle">Arc-en-ciel prismatique</strong><em id="eventDescription">Capture-le avant qu’il ne disparaisse</em></span><b id="eventTimer">20 s</b>
+    </button>
 
     <div class="layout">
       <aside class="cloud-panel" aria-label="Production manuelle">
@@ -61,6 +64,11 @@
           <div><span>Temps de jeu</span><b id="playTime">0 min</b></div>
           <div><span>Automates</span><b id="totalUnits">0</b></div>
         </div>
+        <section class="contract-card" id="contractCard">
+          <div class="contract-top"><span>☷ Contrat météo</span><b id="contractTimer">—</b></div>
+          <strong id="contractTitle">Calibration en cours</strong><p id="contractDescription">Le premier contrat arrive bientôt.</p>
+          <div class="contract-bar"><i id="contractFill"></i></div><small id="contractReward">Récompense : bonus permanent</small>
+        </section>
         <button class="prestige-teaser" id="prestigeButton" type="button">
           <span class="prestige-icon">◈</span><span><small>Cycle de l’Aube</small><strong id="prestigeTitle">Encore inaccessible</strong><em id="prestigeProgress">Atteins 1 Md de gouttes</em></span><b>→</b>
         </button>
@@ -108,16 +116,24 @@
     <button class="primary-button" id="confirmPrestige" type="button">Commencer le nouveau cycle</button>
   </dialog>
 
+  <dialog id="dawnDialog" class="dawn-dialog">
+    <button class="dialog-close" data-close="dawnDialog" type="button" aria-label="Fermer">×</button>
+    <div class="dawn-emblem">◈</div><p class="eyebrow">Héritage permanent</p><h2>Constellation des Aubes</h2>
+    <p>Chaque Aube provient d’un redémarrage. Dépense-les pour modifier toutes tes ères futures.</p>
+    <div class="dawn-balance"><span>Aubes disponibles</span><b id="dawnBalance">0</b><small id="dawnSpent">0 dépensée</small></div>
+    <div class="dawn-tree" id="dawnTree"></div>
+  </dialog>
+
   <dialog id="helpDialog">
     <button class="dialog-close" data-close="helpDialog" type="button" aria-label="Fermer">×</button>
     <p class="eyebrow">Guide de l’observateur</p><h2>Une météo sans limite</h2>
-    <ol><li>Presse le nuage et construis tes premiers automates.</li><li>Chaque automate possède 16 paliers, de 1 à 2 500 exemplaires.</li><li>Les innovations apparaissent lorsque leurs conditions sont remplies, puis disparaissent après achat.</li><li>À 20 pressions, une averse multiplie temporairement toute la production.</li><li>Une fois l’objectif d’ère atteint, redémarre pour gagner une Aube et accélérer tous les cycles futurs.</li></ol>
+    <ol><li>Presse le nuage et construis tes premiers automates.</li><li>Chaque automate possède 16 paliers, de 1 à 2 500 exemplaires.</li><li>Les innovations apparaissent lorsque leurs conditions sont remplies, puis disparaissent après achat.</li><li>Les contrats météo donnent des objectifs temporaires ; chaque réussite augmente durablement la production.</li><li>Capture les phénomènes rares pour profiter de leur bonus temporaire.</li><li>Une fois l’objectif d’ère atteint, redémarre pour gagner une Aube et améliorer la Constellation.</li></ol>
     <p>La sauvegarde est automatique. L’heure réseau restitue jusqu’à 12 heures de production hors ligne.</p>
     <button class="reset-button" id="resetButton" type="button">Effacer définitivement la sauvegarde</button>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="achievement" id="achievement" role="status" aria-live="polite" hidden><span>✦</span><div><small>Nouveau palier</small><b></b></div></div>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

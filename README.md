@@ -19,6 +19,9 @@ Le jeu inclut :
 - 20 innovations globales supplémentaires ;
 - des achats ×1, ×10, ×100 ou Max ;
 - un système de prestige infini fondé sur les Aubes ;
+- une Constellation permanente de 10 améliorations achetées avec les Aubes ;
+- des contrats météo temporaires qui augmentent durablement la production ;
+- des phénomènes rares à capturer pour des bonus courts et puissants ;
 - une ambiance visuelle qui évolue sur six ères ;
 - des averses temporaires, statistiques et animations ;
 - une sauvegarde automatique avec jusqu'à 12 heures de production hors ligne, extensibles par amélioration.

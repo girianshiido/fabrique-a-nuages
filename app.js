@@ -57,11 +57,38 @@ const globalUpgrades = [
   ["infinite_sky","Ciel sans bord","♾️",1e27,3e26,"all",10,"Toute la production ×10"]
 ].map(([id,name,icon,cost,unlock,type,value,description])=>({id,name,icon,cost,unlock,type,value,description}));
 
+const dawnNodes = [
+  {id:"first_light",icon:"🌅",name:"Première lueur",cost:1,color:"#eee3ff",description:"Toute la production permanente +25 %",kind:"all",value:1.25},
+  {id:"swift_touch",icon:"☝️",name:"Main rapide",cost:1,color:"#dff4ff",description:"Condensation manuelle ×2",kind:"click",value:2},
+  {id:"deep_sleep",icon:"🛌",name:"Sommeil profond",cost:1,color:"#e4f7ec",description:"Gains hors ligne ×2",kind:"offline",value:2},
+  {id:"storm_soul",icon:"⚡",name:"Âme d’orage",cost:2,color:"#fff0cc",description:"Averses : +1 multiplicateur",kind:"rainPower",value:1,requires:"first_light"},
+  {id:"lean_air",icon:"🪶",name:"Air léger",cost:2,color:"#e7f1ff",description:"Automates 8 % moins chers",kind:"cost",value:.92,requires:"swift_touch"},
+  {id:"prism",icon:"🌈",name:"Prisme céleste",cost:2,color:"#f3e5ff",description:"Événements rares 2× plus puissants",kind:"event",value:2,requires:"storm_soul"},
+  {id:"contractor",icon:"📜",name:"Maître des contrats",cost:3,color:"#e8f5ed",description:"Récompenses de contrat ×2",kind:"contractReward",value:2,requires:"deep_sleep"},
+  {id:"wide_horizon",icon:"🌄",name:"Horizon large",cost:3,color:"#fff3db",description:"Chaque contrat ajoute +4 % de production",kind:"contractBonus",value:.04,requires:"contractor"},
+  {id:"born_ready",icon:"🧰",name:"Né prêt",cost:4,color:"#e7e5ff",description:"Chaque Aube commence avec 500 gouttes",kind:"start",value:500,requires:"lean_air"},
+  {id:"eternal_weather",icon:"♾️",name:"Météo éternelle",cost:5,color:"#e6f8ff",description:"Toute la production permanente ×2",kind:"all",value:2,requires:"wide_horizon"}
+];
+
+const rareEvents = [
+  {id:"rainbow",icon:"🌈",name:"Arc-en-ciel prismatique",description:"Clique pour obtenir ×12 condensation pendant 35 s",kind:"click",value:12,duration:35},
+  {id:"supercell",icon:"⛈️",name:"Supercellule captive",description:"Clique pour obtenir ×5 production pendant 30 s",kind:"production",value:5,duration:30},
+  {id:"golden",icon:"✨",name:"Front doré",description:"Clique pour gagner 90 secondes de production",kind:"instant",value:90,duration:0},
+  {id:"aurora",icon:"🌌",name:"Aurore contractuelle",description:"Clique pour accélérer le contrat actif de 35 %",kind:"contract",value:.35,duration:0}
+];
+
+const contractTemplates = [
+  {id:"clicks",icon:"☝️",name:"Impulsion manuelle",description:"Condense {target} fois avant la fin",metric:"clicks",time:75},
+  {id:"drops",icon:"💧",name:"Réserve d’humidité",description:"Produis {target} gouttes avant la fin",metric:"drops",time:90},
+  {id:"units",icon:"⚙️",name:"Montée en cadence",description:"Achète {target} automates avant la fin",metric:"units",time:90}
+];
+
 const initialOwned = () => Object.fromEntries(units.map(u=>[u.id,0]));
 const initialState = () => ({
-  drops:0,runTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(),upgrades:[],cycles:0,
+  drops:0,runTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],
+  activeEvent:null,nextEventAt:Date.now()+60000,contract:null,nextContractAt:Date.now()+6000,
   buyMode:"1",sound:true,startedAt:Date.now(),runStartedAt:Date.now(),lastTick:Date.now(),savedAt:Date.now(),
-  stats:{clicks:0,unitsBought:0,upgradesBought:0,bestPps:0,offlineEarned:0}
+  stats:{clicks:0,unitsBought:0,upgradesBought:0,bestPps:0,offlineEarned:0,contractsCompleted:0,contractsFailed:0,eventsCaptured:0}
 });
 
 const $ = selector => document.querySelector(selector);
@@ -73,13 +100,14 @@ let lastFullRender = 0;
 let lastUnlockedCount = 0;
 const els = {
   drops:$("#dropCount"),perSecond:$("#perSecond"),perClick:$("#perClick"),run:$("#runDrops"),lifetime:$("#lifetimeDrops"),time:$("#playTime"),
-  totalUnits:$("#totalUnits"),dawns:$("#dawnCount"),cycles:$("#cycleCount"),boost:$("#permanentBoost"),cloud:$("#cloudButton"),
+  totalUnits:$("#totalUnits"),dawns:$("#dawnCount"),boost:$("#permanentBoost"),cloud:$("#cloudButton"),
   pressure:$("#pressureFill"),pressureLabel:$("#pressureLabel"),pressureBar:$(".pressure-bar"),pressureHint:$("#pressureHint"),weather:$(".weather-label"),
   weatherText:$("#weatherText"),weatherTimer:$("#weatherTimer"),rainLayer:$("#rainLayer"),units:$("#unitList"),upgrades:$("#upgradeList"),
   lockedUpgrades:$("#lockedUpgradeList"),upgradeCount:$("#upgradeCount"),upgradeBadge:$("#upgradeBadge"),unlockedBadge:$("#unlockedUnitsBadge"),
   records:$("#recordGrid"),eraTrack:$("#eraTrack"),eraLabel:$("#eraLabel"),toast:$("#toast"),achievement:$("#achievement"),sound:$("#soundButton"),
   help:$("#helpDialog"),prestige:$("#prestigeDialog"),prestigeButton:$("#prestigeButton"),prestigeTitle:$("#prestigeTitle"),prestigeProgress:$("#prestigeProgress"),
   prestigeDescription:$("#prestigeDescription"),prestigeReward:$("#prestigeReward"),nextCycleInfo:$("#nextCycleInfo"),timeStatus:$("#timeStatus")
+  ,dawnDialog:$("#dawnDialog"),dawnBalance:$("#dawnBalance"),dawnSpent:$("#dawnSpent"),dawnTree:$("#dawnTree"),eventBanner:$("#eventBanner"),eventIcon:$("#eventIcon"),eventTitle:$("#eventTitle"),eventDescription:$("#eventDescription"),eventTimer:$("#eventTimer"),contractCard:$("#contractCard"),contractTimer:$("#contractTimer"),contractTitle:$("#contractTitle"),contractDescription:$("#contractDescription"),contractFill:$("#contractFill"),contractReward:$("#contractReward")
 };
 
 function load(){
@@ -89,7 +117,8 @@ function load(){
     const fresh=initialState(),legacyMap={gloves:"soft_gloves",blades:"unit_fan_0",forecast:"silver_cloud",thunder:"storm_bottle"};
     const legacyTotal=Number(saved.total)||0;
     const migratedUpgrades=[...new Set((saved.upgrades||[]).map(id=>legacyMap[id]||id).filter(id=>globalUpgrades.some(u=>u.id===id)||/^unit_[a-z]+_\d+$/.test(id)))];
-    return {...fresh,...saved,runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:{...fresh.stats,...saved.stats},cycles:Number(saved.cycles)||0};
+    const cycles=Number(saved.cycles)||0;
+    return {...fresh,...saved,runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:{...fresh.stats,...saved.stats},cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[]};
   }catch{return initialState()}
 }
 function now(){return Date.now()+clockOffset}
@@ -113,32 +142,39 @@ async function synchronizeAndRestore(){
 }
 
 function hasUpgrade(id,s=state){return s.upgrades.includes(id)}
+function hasDawn(id){return state.dawnUpgrades.includes(id)}
+function dawnNode(id){return dawnNodes.find(node=>node.id===id)}
+function dawnBalance(){return Math.max(0,state.dawns-state.dawnSpent)}
+function dawnEffect(kind,base,combine=(a,b)=>a*b){return dawnNodes.filter(node=>node.kind===kind&&hasDawn(node.id)).reduce((value,node)=>combine(value,node.value),base)}
 function globalEffect(type,base,combine=(a,b)=>a*b){return globalUpgrades.filter(u=>u.type===type&&hasUpgrade(u.id)).reduce((value,u)=>combine(value,u.value),base)}
-function permanentMultiplier(){return Math.pow(3,state.cycles)}
+function permanentMultiplier(){return (1+state.cycles*.25)*dawnEffect("all",1)}
+function contractMultiplier(){return 1+state.stats.contractsCompleted*(hasDawn("wide_horizon")?.04:.02)}
 function allMultiplier(){return globalEffect("all",1)}
-function clickMultiplier(){return globalEffect("click",1)}
-function offlineMultiplier(){return globalEffect("offline",1)}
+function clickMultiplier(){return globalEffect("click",1)*dawnEffect("click",1)}
+function offlineMultiplier(){return globalEffect("offline",1)*dawnEffect("offline",1)}
 function offlineHours(){return 12+globalEffect("offlineHours",0,(a,b)=>a+b)}
-function costMultiplier(){return globalEffect("cost",1)}
+function costMultiplier(){return globalEffect("cost",1)*dawnEffect("cost",1)}
 function pressureMax(){return Math.max(8,20+globalEffect("pressure",0,(a,b)=>a+b))}
 function rainDuration(){return 15+globalEffect("rainDuration",0,(a,b)=>a+b)}
-function rainPower(){return 2+globalEffect("rainPower",0,(a,b)=>a+b)}
+function rainPower(){return 2+globalEffect("rainPower",0,(a,b)=>a+b)+dawnEffect("rainPower",0,(a,b)=>a+b)}
 function isRaining(){return state.rainUntil>now()}
 function rainMultiplier(){return isRaining()?rainPower():1}
+function activeEvent(){return state.activeEvent&&state.activeEvent.boostUntil>now()?rareEvents.find(event=>event.id===state.activeEvent.id):null}
+function eventMultiplier(kind){const event=activeEvent();return event&&event.kind===kind?event.value*dawnEffect("event",1):1}
 function unitUpgradeId(unit,index){return `unit_${unit.id}_${index}`}
 function unitMultiplier(unit,s=state){
   return MILESTONES.reduce((mult,_,index)=>s.upgrades.includes(unitUpgradeId(unit,index))?mult*(index>=12?3:2):mult,1);
 }
 function baseProduction(s=state){
   const production=units.reduce((sum,u)=>sum+(s.owned[u.id]||0)*u.production*unitMultiplier(u,s),0);
-  return production*allMultiplier()*permanentMultiplier();
+  return production*allMultiplier()*permanentMultiplier()*contractMultiplier();
 }
-function production(){return baseProduction()*rainMultiplier()}
+function production(){return baseProduction()*rainMultiplier()*eventMultiplier("production")}
 function clickValue(){
   const ppsBonus=globalEffect("clickPps",0,(a,b)=>a+b)*baseProduction();
-  return (1*clickMultiplier()*permanentMultiplier()+ppsBonus)*rainMultiplier();
+  return (1*clickMultiplier()*permanentMultiplier()+ppsBonus)*rainMultiplier()*eventMultiplier("click");
 }
-function addDrops(amount){if(!Number.isFinite(amount)||amount<=0)return;state.drops+=amount;state.runTotal+=amount;state.lifetime+=amount}
+function addDrops(amount){if(!Number.isFinite(amount)||amount<=0)return;state.drops+=amount;state.runTotal+=amount;state.lifetime+=amount;recordContractProgress("drops",amount)}
 
 function unitCost(unit,count=1,owned=state.owned[unit.id]){
   const first=unit.baseCost*Math.pow(COST_GROWTH,owned)*costMultiplier();
@@ -155,7 +191,7 @@ function purchaseQuote(unit){if(state.buyMode==="max")return maxAffordable(unit)
 function buyUnit(id,event){
   if(!initialized)return;const unit=units.find(u=>u.id===id),quote=purchaseQuote(unit);
   if(!quote.count||state.drops<quote.cost)return;const before=state.owned[id];state.drops-=quote.cost;state.owned[id]+=quote.count;state.stats.unitsBought+=quote.count;
-  checkCrossedMilestones(unit,before,state.owned[id]);playTone(275+unit.index*9,.055);burst(event);render(true);save();
+  checkCrossedMilestones(unit,before,state.owned[id]);recordContractProgress("units",quote.count);playTone(275+unit.index*9,.055);burst(event);render(true);save();
 }
 function milestoneUpgrade(unit,index){
   const milestone=MILESTONES[index],power=index>=12?3:2;
@@ -182,8 +218,58 @@ function buyUpgrade(id,event){
 }
 function checkCrossedMilestones(unit,before,after){MILESTONES.forEach(m=>{if(before<m&&after>=m)achievement(`${unit.name} : cap des ${format(m)}`)})}
 
+function contractTarget(template){
+  const tier=state.stats.contractsCompleted;
+  if(template.metric==="clicks")return 20+tier*8;
+  if(template.metric==="units")return 3+Math.floor(tier/2);
+  return Math.max(100,baseProduction()*Math.max(25,35+tier*8));
+}
+function makeContract(){
+  const template=contractTemplates[state.stats.contractsCompleted%contractTemplates.length],target=contractTarget(template);
+  state.contract={id:template.id,target,progress:0,startedAt:now(),expiresAt:now()+template.time*1000};state.nextContractAt=0;
+  toast(`Nouveau contrat : ${template.name}`);render(true);save();
+}
+function recordContractProgress(metric,amount){
+  const contract=state.contract;if(!contract||contract.id!==metric||amount<=0)return;
+  contract.progress=Math.min(contract.target,contract.progress+amount);
+  if(contract.progress>=contract.target)completeContract();
+}
+function contractReward(){return Math.max(150,baseProduction()*60*(state.stats.contractsCompleted+1))*dawnEffect("contractReward",1)}
+function completeContract(){
+  const reward=contractReward();state.contract=null;state.stats.contractsCompleted++;state.nextContractAt=now()+12000;addDrops(reward);achievement(`Contrat réussi : +${format(reward)} gouttes`);playTone(720,.2);save();
+}
+function updateContract(){
+  if(!state.contract&&now()>=state.nextContractAt)makeContract();
+  if(state.contract&&state.contract.expiresAt<=now()){
+    state.stats.contractsFailed++;state.contract=null;state.nextContractAt=now()+9000;toast("Contrat expiré — le prochain arrive bientôt.");save();
+  }
+}
+function startRareEvent(){
+  const event=rareEvents[Math.floor(Math.random()*rareEvents.length)];
+  state.activeEvent={id:event.id,spawnedAt:now(),expiresAt:now()+20000,boostUntil:0};state.nextEventAt=now()+(70000+Math.random()*65000);render(true);playTone(590,.12);
+}
+function claimEvent(){
+  const current=state.activeEvent,event=current&&rareEvents.find(item=>item.id===current.id);
+  if(!event||current.expiresAt<=now()||current.boostUntil)return;
+  const power=dawnEffect("event",1);
+  if(event.kind==="instant"){addDrops(baseProduction()*event.value*power);state.activeEvent=null}
+  else if(event.kind==="contract"){if(state.contract){state.contract.progress=Math.min(state.contract.target,state.contract.progress+state.contract.target*event.value*power);if(state.contract.progress>=state.contract.target)completeContract()}state.activeEvent=null}
+  else current.boostUntil=now()+event.duration*1000;
+  state.stats.eventsCaptured++;achievement(`${event.name} capturé !`);playTone(780,.17);render(true);save();
+}
+function updateEvents(){
+  const current=state.activeEvent;
+  if(current&&((!current.boostUntil&&current.expiresAt<=now())||(current.boostUntil&&current.boostUntil<=now()))){state.activeEvent=null;render(true)}
+  if(!state.activeEvent&&now()>=state.nextEventAt)startRareEvent();
+}
+function eventDisplay(){
+  const current=state.activeEvent,event=current&&rareEvents.find(item=>item.id===current.id);if(!event)return null;
+  const boost=Boolean(current.boostUntil),until=boost?current.boostUntil:current.expiresAt;
+  return{event,boost,seconds:Math.max(0,(until-now())/1000)};
+}
+
 function pressCloud(event){
-  if(!initialized)return;const gain=clickValue();addDrops(gain);state.stats.clicks++;
+  if(!initialized)return;const gain=clickValue();addDrops(gain);state.stats.clicks++;recordContractProgress("clicks",1);
   if(!isRaining()){
     state.pressure++;
     if(state.pressure>=pressureMax()){state.pressure=0;state.rainUntil=now()+rainDuration()*1000;toast(`Averse déclenchée : production ×${rainPower()} !`);playTone(650,.2);rainSplash()}
@@ -201,8 +287,12 @@ function openPrestige(){
   $("#confirmPrestige").disabled=!ready;els.prestige.showModal();
 }
 function prestige(){
-  if(!canPrestige())return;const kept={cycles:state.cycles+1,lifetime:state.lifetime,startedAt:state.startedAt,sound:state.sound,stats:state.stats};
-  state={...initialState(),...kept};initialized=true;els.prestige.close();achievement(`Aube ${state.cycles} — production permanente ×${format(permanentMultiplier())}`);render(true);save();
+  if(!canPrestige())return;const kept={cycles:state.cycles+1,dawns:state.dawns+1,dawnSpent:state.dawnSpent,dawnUpgrades:state.dawnUpgrades,lifetime:state.lifetime,startedAt:state.startedAt,sound:state.sound,stats:state.stats};
+  state={...initialState(),...kept};const starter=dawnEffect("start",0,(a,b)=>a+b)*state.cycles;state.drops=starter;state.runTotal=starter;state.lifetime+=starter;initialized=true;els.prestige.close();achievement(`Aube ${state.cycles} reçue — ${format(dawnBalance())} disponible${dawnBalance()>1?"s":""}`);render(true);save();
+}
+function canBuyDawn(node){return !hasDawn(node.id)&&(!node.requires||hasDawn(node.requires))&&dawnBalance()>=node.cost}
+function buyDawn(id){
+  const node=dawnNode(id);if(!node||!canBuyDawn(node))return;state.dawnUpgrades.push(id);state.dawnSpent+=node.cost;achievement(`${node.name} inscrite dans la Constellation`);playTone(680,.16);render(true);save();
 }
 
 function isUnitUnlocked(unit){return unit.index<4||state.runTotal>=unit.baseCost*.18||(unit.index>0&&state.owned[units[unit.index-1].id]>0)}
@@ -210,15 +300,27 @@ function nextMilestone(unit){const owned=state.owned[unit.id];return MILESTONES.
 function render(force=false){
   const raining=isRaining(),pps=production(),pMax=pressureMax();
   els.drops.textContent=format(state.drops);els.perSecond.textContent=format(pps);els.perClick.textContent=format(clickValue());els.run.textContent=format(state.runTotal);els.lifetime.textContent=format(state.lifetime);
-  els.time.textContent=formatTime((Date.now()-state.startedAt)/1000);els.totalUnits.textContent=format(Object.values(state.owned).reduce((a,b)=>a+b,0));els.dawns.textContent=state.cycles;els.cycles.textContent=state.cycles;els.boost.textContent=`×${format(permanentMultiplier())}`;
+  els.time.textContent=formatTime((Date.now()-state.startedAt)/1000);els.totalUnits.textContent=format(Object.values(state.owned).reduce((a,b)=>a+b,0));els.dawns.textContent=dawnBalance();els.boost.textContent=`×${format(permanentMultiplier())}`;
   els.pressure.style.width=`${state.pressure/pMax*100}%`;els.pressureLabel.textContent=`${state.pressure} / ${pMax}`;els.pressureBar.setAttribute("aria-valuemax",pMax);els.pressureBar.setAttribute("aria-valuenow",state.pressure);els.pressureHint.textContent=`À ${pMax} : averse ×${rainPower()} pendant ${rainDuration()} secondes`;
   els.weather.classList.toggle("rain",raining);els.cloud.classList.toggle("rain",raining);els.rainLayer.classList.toggle("active",raining);els.weatherText.textContent=raining?`Averse ×${rainPower()}`:"Ciel calme";els.weatherTimer.textContent=raining?`${Math.max(0,(state.rainUntil-now())/1000).toFixed(1)} s`:"";
-  state.stats.bestPps=Math.max(state.stats.bestPps,pps);renderPrestigeTeaser();renderSky();
-  if(force||Date.now()-lastFullRender>650){lastFullRender=Date.now();renderUnits();renderUpgrades();renderRecords()}
+  state.stats.bestPps=Math.max(state.stats.bestPps,pps);renderPrestigeTeaser();renderSky();renderEvent();renderContract();
+  if(force||Date.now()-lastFullRender>650){lastFullRender=Date.now();renderUnits();renderUpgrades();renderRecords();renderDawnTree()}
 }
 function renderPrestigeTeaser(){
   const req=prestigeRequirement(),ready=canPrestige(),percent=Math.min(100,state.runTotal/req*100);
   els.prestigeButton.disabled=!ready;els.prestigeTitle.textContent=ready?"Une Aube t’attend":"Encore inaccessible";els.prestigeProgress.textContent=ready?`Redémarrer avec un bonus ×${format(Math.pow(3,state.cycles+1))}`:`${format(state.runTotal)} / ${format(req)} · ${percent.toFixed(percent<1?2:0)} %`;
+}
+function renderEvent(){
+  const display=eventDisplay();if(!display){els.eventBanner.hidden=true;return}
+  const {event,boost,seconds}=display;els.eventBanner.hidden=false;els.eventIcon.textContent=event.icon;els.eventTitle.textContent=event.name;els.eventDescription.textContent=boost?`Bonus actif : ${event.description.replace("Clique pour obtenir ","")}`:event.description;els.eventTimer.textContent=`${seconds.toFixed(0)} s`;els.eventBanner.classList.toggle("boosting",boost);
+}
+function renderContract(){
+  const contract=state.contract;if(!contract){els.contractTitle.textContent="Nouveau front en préparation";els.contractDescription.textContent="Le prochain contrat météo arrive sous peu.";els.contractFill.style.width="0%";els.contractTimer.textContent="—";els.contractReward.textContent=`Réussites : ${state.stats.contractsCompleted} · +${(contractMultiplier()-1)*100|0} % production`;return}
+  const template=contractTemplates.find(item=>item.id===contract.id),seconds=Math.max(0,(contract.expiresAt-now())/1000),progress=Math.min(100,contract.progress/contract.target*100);els.contractTitle.textContent=`${template.icon} ${template.name}`;els.contractDescription.textContent=template.description.replace("{target}",template.metric==="drops"?format(contract.target):format(Math.ceil(contract.target)));els.contractFill.style.width=`${progress}%`;els.contractTimer.textContent=`${seconds.toFixed(0)} s`;els.contractReward.textContent=`${format(contract.progress)} / ${format(contract.target)} · +${format(contractReward())} gouttes`;
+}
+function renderDawnTree(){
+  els.dawnBalance.textContent=dawnBalance();els.dawnSpent.textContent=`${state.dawnSpent} dépensée${state.dawnSpent>1?"s":""}`;
+  els.dawnTree.innerHTML=dawnNodes.map(node=>{const bought=hasDawn(node.id),blocked=node.requires&&!hasDawn(node.requires);return `<button class="dawn-node ${bought?"purchased":""}" type="button" data-dawn="${node.id}" ${bought||!canBuyDawn(node)?"disabled":""} style="--node-color:${node.color}"><span class="node-head"><span class="node-icon">${bought?"✓":blocked?"🔒":node.icon}</span><strong>${node.name}</strong></span><p>${blocked?`Nécessite ${dawnNode(node.requires).name}`:node.description}</p><b>${bought?"Inscrite":`${node.cost} Aube${node.cost>1?"s":""}`}</b></button>`}).join("");
 }
 function renderSky(){const highest=units.reduce((max,u)=>state.owned[u.id]>0?Math.max(max,u.index):max,0),stage=Math.min(5,Math.floor(highest/4));document.body.dataset.sky=stage}
 function renderUnits(){
@@ -241,7 +343,8 @@ function renderRecords(){
   const unlocked=units.filter(isUnitUnlocked).length,completed=MILESTONES.reduce((n,_,i)=>n+units.filter(u=>hasUpgrade(unitUpgradeId(u,i))).length,0);
   const records=[
     ["Meilleure production",`${format(state.stats.bestPps)} /s`,"Record tous cycles"],["Clics sur le nuage",format(state.stats.clicks),"Depuis l’origine"],["Automates achetés",format(state.stats.unitsBought),"Tous cycles"],
-    ["Innovations installées",format(state.stats.upgradesBought),`${completed} caps d’automates`],["Gains hors ligne",format(state.stats.offlineEarned),`Limite ${offlineHours()} h`],["Prochain cycle",format(prestigeRequirement()),`${state.cycles} Aube${state.cycles>1?"s":""}`]
+    ["Innovations installées",format(state.stats.upgradesBought),`${completed} caps d’automates`],["Contrats réussis",format(state.stats.contractsCompleted),`${state.stats.contractsFailed} expiré${state.stats.contractsFailed>1?"s":""}`],["Phénomènes capturés",format(state.stats.eventsCaptured),"Bonus météorologiques"],
+    ["Gains hors ligne",format(state.stats.offlineEarned),`Limite ${offlineHours()} h`],["Cycles accomplis",format(state.cycles),`${dawnBalance()} Aube${dawnBalance()>1?"s":""} disponible${dawnBalance()>1?"s":""}`],["Prochain cycle",format(prestigeRequirement()),"Objectif de cette ère"]
   ];
   els.records.innerHTML=records.map(r=>`<div class="record-card"><span>${r[0]}</span><b>${r[1]}</b><small>${r[2]}</small></div>`).join("");
   const era=Math.min(6,Math.ceil(unlocked/4));els.eraLabel.textContent=`Ère ${era}`;els.eraTrack.innerHTML=Array.from({length:6},(_,i)=>`<div class="era-node ${i<era?"reached":""}"><b>${["🌤️","🌧️","⚡","🌌","🪐","♾️"][i]}</b><small>${["Troposphère","Mousson","Tempête","Cosmos","Galaxie","Infini"][i]}</small></div>`).join("");
@@ -268,11 +371,14 @@ els.upgrades.addEventListener("click",event=>{const button=event.target.closest(
 $(".buy-modes").addEventListener("click",event=>{const button=event.target.closest("[data-mode]");if(!button)return;state.buyMode=button.dataset.mode;$$('[data-mode]').forEach(b=>b.classList.toggle("active",b===button));render(true)});
 $(".tabs").addEventListener("click",event=>{const button=event.target.closest("[data-tab]");if(!button)return;$$('[data-tab]').forEach(b=>b.classList.toggle("active",b===button));$$('.tab-page').forEach(p=>{const active=p.id===`${button.dataset.tab}Page`;p.classList.toggle("active",active);p.hidden=!active});render(true)});
 els.prestigeButton.addEventListener("click",openPrestige);$("#confirmPrestige").addEventListener("click",prestige);
+$("#dawnTreeButton").addEventListener("click",()=>{renderDawnTree();els.dawnDialog.showModal()});
+els.dawnTree.addEventListener("click",event=>{const button=event.target.closest("[data-dawn]");if(button)buyDawn(button.dataset.dawn)});
+els.eventBanner.addEventListener("click",claimEvent);
 els.sound.addEventListener("click",()=>{state.sound=!state.sound;els.sound.setAttribute("aria-pressed",state.sound);els.sound.textContent=state.sound?"♪":"×";els.sound.setAttribute("aria-label",state.sound?"Désactiver les sons":"Activer les sons");save()});
 $("#helpButton").addEventListener("click",()=>els.help.showModal());
 $$('[data-close]').forEach(button=>button.addEventListener("click",()=>$("#"+button.dataset.close).close()));
-[$("#helpDialog"),$("#prestigeDialog")].forEach(dialog=>dialog.addEventListener("click",event=>{if(event.target===dialog)dialog.close()}));
+[$("#helpDialog"),$("#prestigeDialog"),$("#dawnDialog")].forEach(dialog=>dialog.addEventListener("click",event=>{if(event.target===dialog)dialog.close()}));
 $("#resetButton").addEventListener("click",()=>{if(confirm("Effacer toute la progression, y compris les Aubes ?")){localStorage.removeItem(SAVE_KEY);localStorage.removeItem(LEGACY_SAVE_KEY);state=initialState();initialized=true;els.help.close();render(true);save()}});
 
-setInterval(()=>{if(!initialized)return;const current=now(),delta=Math.min(1,Math.max(0,(current-state.lastTick)/1000)),gain=production()*delta;addDrops(gain);state.lastTick=current;render()},250);
+setInterval(()=>{if(!initialized)return;const current=now(),delta=Math.min(1,Math.max(0,(current-state.lastTick)/1000)),gain=production()*delta;addDrops(gain);state.lastTick=current;updateContract();updateEvents();render()},250);
 setInterval(save,10000);window.addEventListener("beforeunload",save);render(true);synchronizeAndRestore();
