@@ -226,7 +226,7 @@ const els = {
   totalUnits:$("#totalUnits"),dawns:$("#dawnCount"),boost:$("#permanentBoost"),cloud:$("#cloudButton"),
   pressure:$("#pressureFill"),pressureLabel:$("#pressureLabel"),pressureBar:$(".pressure-bar"),pressureHint:$("#pressureHint"),weather:$(".weather-label"),
   weatherText:$("#weatherText"),weatherTimer:$("#weatherTimer"),rainLayer:$("#rainLayer"),units:$("#unitList"),upgrades:$("#upgradeList"),
-  lockedUpgrades:$("#lockedUpgradeList"),upgradeCount:$("#upgradeCount"),upgradeBadge:$("#upgradeBadge"),unlockedBadge:$("#unlockedUnitsBadge"),
+  lockedUpgrades:$("#lockedUpgradeList"),upgradeCount:$("#upgradeCount"),upgradeBadge:$("#upgradeBadge"),buyAllUpgrades:$("#buyAllUpgrades"),unlockedBadge:$("#unlockedUnitsBadge"),
   records:$("#recordGrid"),eraTrack:$("#eraTrack"),eraLabel:$("#eraLabel"),toast:$("#toast"),achievement:$("#achievement"),sound:$("#soundButton"),
   help:$("#helpDialog"),prestige:$("#prestigeDialog"),prestigeButton:$("#prestigeButton"),prestigeTitle:$("#prestigeTitle"),prestigeProgress:$("#prestigeProgress"),
   prestigeDescription:$("#prestigeDescription"),prestigeReward:$("#prestigeReward"),nextCycleInfo:$("#nextCycleInfo"),timeStatus:$("#timeStatus"),pathPicker:$("#pathPicker"),pathHeading:$("#pathHeading"),pathTagline:$("#pathTagline"),pathOverview:$("#pathOverview"),pathTechCount:$("#pathTechCount"),pathTechList:$("#pathTechList"),projectList:$("#projectList"),relicCount:$("#relicCount"),relicDescription:$("#relicDescription"),strategyBadge:$("#strategyBadge"),expeditionProgress:$("#expeditionProgress"),expeditionTrack:$("#expeditionTrack"),bossCard:$("#bossCard"),finalProject:$("#finalProject"),achievementCount:$("#achievementCount"),achievementList:$("#achievementList"),finale:$("#finaleDialog"),newGamePlusLevel:$("#newGamePlusLevel")
@@ -373,6 +373,18 @@ function buyUpgrade(id,event){
   if(!upgrade||state.drops<upgrade.cost)return;
   const unlocked=upgrade.unit?upgrade.unlocked:state.runTotal>=upgrade.unlock;if(!unlocked)return;
   state.drops-=upgrade.cost;state.upgrades.push(id);state.stats.upgradesBought++;playTone(520,.13);burst(event,true);toast(`${upgrade.name} installée !`);render(true);save();
+}
+function buyAllAvailableUpgrades(event){
+  if(!initialized)return;
+  let bought=0;
+  while(true){
+    const upgrade=availableUpgrades().find(item=>state.drops>=item.cost);
+    if(!upgrade)break;
+    state.drops-=upgrade.cost;state.upgrades.push(upgrade.id);state.stats.upgradesBought++;bought++;
+  }
+  if(!bought)return;
+  const label=isMars()?"protocoles":"innovations";
+  playTone(660,.16);burst(event,true);toast(`${bought} ${label} installé${bought>1?"s":""} !`);render(true);save();
 }
 function checkCrossedMilestones(unit,before,after){MILESTONES.forEach(m=>{if(before<m&&after>=m)achievement(`${unit.name} : cap des ${format(m)}`)})}
 
@@ -575,6 +587,7 @@ function renderUnits(){
 }
 function renderUpgrades(){
   const available=availableUpgrades(),visible=available.slice(0,12);els.upgradeBadge.textContent=available.length;els.upgradeCount.textContent=state.upgrades.length;
+  els.buyAllUpgrades.disabled=!available.some(upgrade=>state.drops>=upgrade.cost);
   const upgradeName=u=>isMars()&&!u.unit?marsUpgradeNames[globalUpgrades.findIndex(item=>item.id===u.id)]||u.name:u.name;
   els.upgrades.innerHTML=visible.length?visible.map(u=>`<button class="upgrade-card" type="button" data-upgrade="${u.id}" ${state.drops<u.cost?"disabled":""} style="--upgrade-color:${u.color||"#fff0ca"}"><span class="upgrade-top"><span class="upgrade-icon">${u.icon||u.unit.icon}</span><strong>${upgradeName(u)}</strong></span><p>${u.description}</p><span class="upgrade-bottom"><small>${u.condition}</small><b>${format(u.cost)} ◆</b></span></button>`).join(""):`<div class="empty-upgrades">Aucune recherche disponible pour le moment.<br>Achète des automates et franchis de nouveaux caps.</div>`;
   els.lockedUpgrades.innerHTML=lockedUpgradeHints().map(u=>`<span class="research-hint">🔒 ${upgradeName(u)} · ${u.condition}</span>`).join("");
@@ -624,6 +637,7 @@ function playTone(frequency,duration){if(!state.sound)return;try{audioContext??=
 els.cloud.addEventListener("click",pressCloud);
 els.units.addEventListener("click",event=>{const button=event.target.closest("[data-unit]");if(button)buyUnit(button.dataset.unit,event)});
 els.upgrades.addEventListener("click",event=>{const button=event.target.closest("[data-upgrade]");if(button)buyUpgrade(button.dataset.upgrade,event)});
+els.buyAllUpgrades.addEventListener("click",buyAllAvailableUpgrades);
 $(".buy-modes").addEventListener("click",event=>{const button=event.target.closest("[data-mode]");if(!button)return;state.buyMode=button.dataset.mode;$$('[data-mode]').forEach(b=>b.classList.toggle("active",b===button));render(true)});
 $(".tabs").addEventListener("click",event=>{const button=event.target.closest("[data-tab]");if(!button)return;$$('[data-tab]').forEach(b=>b.classList.toggle("active",b===button));$$('.tab-page').forEach(p=>{const active=p.id===`${button.dataset.tab}Page`;p.classList.toggle("active",active);p.hidden=!active});render(true)});
 els.prestigeButton.addEventListener("click",openPrestige);$("#confirmPrestige").addEventListener("click",prestige);

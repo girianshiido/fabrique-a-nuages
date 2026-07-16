@@ -12,7 +12,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body data-sky="0">
   <div class="world" aria-hidden="true">
@@ -98,7 +98,7 @@
         </div>
 
         <div class="tab-page" id="upgradesPage" hidden>
-          <div class="panel-head"><div><p class="eyebrow">Laboratoire</p><h1>Innovations disponibles</h1></div><p class="shop-note">Achetées = remplacées</p></div>
+          <div class="panel-head"><div><p class="eyebrow">Laboratoire</p><h1>Innovations disponibles</h1></div><div class="upgrade-actions"><p class="shop-note">Achetées = remplacées</p><button id="buyAllUpgrades" class="buy-all-upgrades" type="button" title="Achète les améliorations accessibles, de la moins chère à la plus chère">Tout acheter</button></div></div>
           <div class="upgrade-summary"><span><b id="upgradeCount">0</b> innovations installées</span><span><b id="milestoneTotal">384</b> paliers d’automates</span></div>
           <div id="upgradeList" class="upgrade-list"></div>
           <div class="locked-preview"><h2>Prochaines recherches</h2><div id="lockedUpgradeList"></div></div>
@@ -161,6 +161,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="achievement" id="achievement" role="status" aria-live="polite" hidden><span>✦</span><div><small>Nouveau palier</small><b></b></div></div>
-  <script src="app.js?v=13"></script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>
