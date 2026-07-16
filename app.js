@@ -274,13 +274,14 @@ function checkCrossedMilestones(unit,before,after){MILESTONES.forEach(m=>{if(bef
 
 function contractTarget(template){
   const tier=state.stats.contractsCompleted;
-  if(template.metric==="clicks")return 20+tier*8;
+  if(template.metric==="clicks")return Math.min(500,20+tier*3);
   if(template.metric==="units")return 3+Math.floor(tier/2);
   return Math.max(100,baseProduction()*Math.max(25,35+tier*8));
 }
+function contractDuration(template,target){return template.metric==="clicks"?Math.min(100,Math.max(30,Math.ceil(target/5))):template.time+Math.floor(state.stats.contractsCompleted/6)*15}
 function makeContract(){
   const template=contractTemplates[state.stats.contractsCompleted%contractTemplates.length],target=contractTarget(template);
-  const duration=template.metric==="clicks"?Math.max(template.time,target*3.5):template.time+Math.floor(state.stats.contractsCompleted/6)*15;
+  const duration=contractDuration(template,target);
   state.contract={id:template.id,target,progress:0,startedAt:now(),expiresAt:now()+duration*1000};state.nextContractAt=0;
   toast(`Nouveau contrat : ${template.name}`);render(true);save();
 }

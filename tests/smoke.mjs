@@ -41,6 +41,10 @@ assert.equal(permanentMultiplier(),1.5625,"La Première lueur doit s’ajouter a
 assert.equal(state.runTotal,0,"Le total de l’ère doit repartir à zéro");
 assert.equal(state.owned.fan,0,"Les automates doivent être perdus au prestige");
 assert.equal(state.lifetime,1e9,"Le total historique doit être conservé");
+state.stats.contractsCompleted=160;
+assert.equal(contractTarget(contractTemplates[0]),500,"Les contrats de condensation doivent plafonner à 500 clics");
+assert.equal(contractDuration(contractTemplates[0],500),100,"500 clics doivent laisser 100 secondes");
+state.stats.contractsCompleted=0;
 state.contract={id:"clicks",target:2,progress:0,startedAt:0,expiresAt:Date.now()+60000};
 recordContractProgress("clicks",1);recordContractProgress("clicks",1);
 assert.equal(state.stats.contractsCompleted,1,"Un contrat doit être validé lorsque sa cible est atteinte");
