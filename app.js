@@ -4,7 +4,9 @@ const SAVE_KEY = "fabrique-nuages-save-v2";
 const LEGACY_SAVE_KEY = "fabrique-nuages-save-v1";
 const TIME_API = "https://gettimeapi.dev/v1/time?timezone=UTC";
 const COST_GROWTH = 1.15;
-const ECONOMY_VERSION = 2;
+const ECONOMY_VERSION = 3;
+const BOSS_DURATION = 90;
+const BOSS_ACTION_BUFFER = 15;
 const EARTH_MILESTONES = [1,5,10,25,50,75,100,150,200,300,400,500,750,1000,1500,2500];
 const EARTH_MILESTONE_NAMES = ["Premier souffle","Équipe complète","Rythme de croisière","Quart de cent","Essaim coordonné","Haute cadence","Cap du cent","Mécanique céleste","Double centaine","Production orbitale","Climat industriel","Grand cycle","Maîtrise des flux","Cap du millier","Horizon absolu","Transcendance"];
 const MARS_MILESTONES = [1,5,10,25,50,75,100,150,200,300,400,500,750,1000,1500,2500,5000,10000,25000,50000];
@@ -292,6 +294,12 @@ function offlineHours(){return 12+globalEffect("offlineHours",0,(a,b)=>a+b)+path
 function costMultiplier(){return globalEffect("cost",1)*dawnEffect("cost",1)*pathEffect("cost",1)*projectEffect("cost",1)}
 function pressureMax(){return Math.max(8,20+globalEffect("pressure",0,(a,b)=>a+b))}
 function rainDuration(){return 15+globalEffect("rainDuration",0,(a,b)=>a+b)+pathEffect("rainDuration",0,(a,b)=>a+b)}
+function bossActionTarget(type){
+  const base=bossActions[type]?.target||1;
+  if(type!=="rain")return base;
+  const possible=Math.floor((BOSS_DURATION-BOSS_ACTION_BUFFER)/rainDuration())+1;
+  return Math.max(1,Math.min(base,possible));
+}
 function rainPower(){return 2+globalEffect("rainPower",0,(a,b)=>a+b)+dawnEffect("rainPower",0,(a,b)=>a+b)+pathEffect("rainPower",0,(a,b)=>a+b)+projectEffect("rainPower",0,(a,b)=>a+b)+(state.currentPath==="storm"?1:0)}
 function isRaining(){return state.rainUntil>now()}
 function rainMultiplier(){return isRaining()?rainPower():1}
@@ -332,7 +340,7 @@ function unitCost(unit,count=1,owned=state.owned[unit.id]){
 }
 function maxAffordable(unit){
   const growth=unit.growth||COST_GROWTH,first=unit.baseCost*Math.pow(growth,state.owned[unit.id])*costMultiplier();
-  if(state.drops<first)return{count:0,cost:0};
+  if(state.drops<first)return{count:0,cost:Math.ceil(first)};
   const count=Math.min(100000,Math.floor(Math.log(1+state.drops*(growth-1)/first)/Math.log(growth)));
   return{count,cost:unitCost(unit,count)};
 }
@@ -389,11 +397,15 @@ function recordContractProgress(metric,amount){
 function contractReward(){return Math.max(150,stableProduction()*60*(state.stats.contractsCompleted+1))*dawnEffect("contractReward",1)*pathEffect("contract",1)}
 function rebalanceLegacyEconomy(){
   if(state.economyVersion>=ECONOMY_VERSION)return;
-  if(isMars()&&state.contract?.id==="drops"){
+  if(state.economyVersion<2&&isMars()&&state.contract?.id==="drops"){
     const oldTarget=Number(state.contract.target)||0,oldProgress=Number(state.contract.progress)||0;
     const progressRatio=oldTarget>0?Math.min(1,oldProgress/oldTarget):0;
     state.contract.target=contractTarget(contractTemplates.find(template=>template.id==="drops"));
     state.contract.progress=state.contract.target*progressRatio;
+  }
+  if(state.economyVersion<3&&state.activeBoss){
+    const chapter=expeditionChapters.find(item=>item.id===state.activeBoss.id);
+    if(chapter?.bossType==="rain")state.activeBoss.actionTarget=Math.min(state.activeBoss.actionTarget||bossActions.rain.target,bossActionTarget("rain"));
   }
   state.economyVersion=ECONOMY_VERSION;
 }
@@ -435,7 +447,7 @@ function updateExpedition(){
   if(boss&&boss.expiresAt<=now()){state.activeBoss=null;toast("La tempête-boss s’est dissipée. Prépare une nouvelle tentative.");save()}
 }
 function startBoss(){
-  const chapter=nextChapter();if(!chapter?.boss||state.activeBoss)return;const action=bossActions[chapter.bossType],target=Math.max(1000,baseProduction()*chapter.goal);state.activeBoss={id:chapter.id,target,progress:0,phase:1,actionProgress:0,actionTarget:action.target,expiresAt:now()+90000};toast(`Tempête-boss : ${chapter.name} ! ${action.icon} ${action.target} ${action.label}.`);playTone(520,.2);render(true);save();
+  const chapter=nextChapter();if(!chapter?.boss||state.activeBoss)return;const action=bossActions[chapter.bossType],actionTarget=bossActionTarget(chapter.bossType),target=Math.max(1000,baseProduction()*chapter.goal);state.activeBoss={id:chapter.id,target,progress:0,phase:1,actionProgress:0,actionTarget,expiresAt:now()+BOSS_DURATION*1000};toast(`Tempête-boss : ${chapter.name} ! ${action.icon} ${actionTarget} ${action.label}.`);playTone(520,.2);render(true);save();
 }
 function recordBossProgress(amount){
   const boss=state.activeBoss;if(!boss||amount<=0)return;boss.progress=Math.min(boss.target,boss.progress+amount);const phase=boss.progress/boss.target>=.75?3:boss.progress/boss.target>=.4?2:1;if(phase>boss.phase){boss.phase=phase;toast(`Phase ${phase} : la tempête se renforce !`);playTone(440+phase*90,.12)};tryCompleteBoss();
@@ -542,7 +554,7 @@ function renderStrategy(){
 function renderExpedition(){
   const complete=state.expedition.length,chapter=nextChapter();els.expeditionProgress.textContent=`${complete} / ${expeditionChapters.length}`;els.expeditionTrack.innerHTML=expeditionChapters.map(item=>`<div class="expedition-node ${state.expedition.includes(item.id)?"done":""} ${chapter?.id===item.id?"active":""}"><b>${state.expedition.includes(item.id)?"✓":item.icon}</b><small>${item.name}</small></div>`).join("");
   if(!chapter){els.bossCard.innerHTML=`<strong>✦ ${isMars()?"Conquête terminée":"Expédition terminée"}</strong><p>${isMars()?"Le Réacteur d’Éden peut maintenant éveiller Mars.":"Le Climatologue du Multivers peut maintenant être construit."}</p>`}
-  else if(chapter.boss){const boss=state.activeBoss,action=bossActions[chapter.bossType];if(boss){const phase=boss.phase||1,phaseHint=phase===1?"La tempête observe tes réserves.":phase===2?"Le front se resserre : la production automatique est réduite à 80 %.":"Œil du cyclone : la production automatique est réduite à 60 %.";els.bossCard.innerHTML=`<strong>${chapter.icon} ${chapter.name} · phase ${phase}/3</strong><p>${format(boss.progress)} / ${format(boss.target)} ${resourceName()} · ${Math.max(0,(boss.expiresAt-now())/1000).toFixed(0)} s</p><p>${action.icon} ${format(boss.actionProgress||0)} / ${action.target} ${action.label}</p><small>${phaseHint}</small>`}else els.bossCard.innerHTML=`<strong>${chapter.icon} ${isMars()?"Anomalie majeure":"Tempête-boss"} : ${chapter.name}</strong><p>Réserve : ${format(Math.max(1000,baseProduction()*chapter.goal))} ${resourceName()} · 90 s. Il faudra aussi ${action.target} ${action.label}.</p><button type="button" data-start-boss="${chapter.id}">Affronter ${isMars()?"l’anomalie":"la tempête"}</button>`}
+  else if(chapter.boss){const boss=state.activeBoss,action=bossActions[chapter.bossType],actionTarget=bossActionTarget(chapter.bossType);if(boss){const phase=boss.phase||1,phaseHint=phase===1?"La tempête observe tes réserves.":phase===2?"Le front se resserre : la production automatique est réduite à 80 %.":"Œil du cyclone : la production automatique est réduite à 60 %.";els.bossCard.innerHTML=`<strong>${chapter.icon} ${chapter.name} · phase ${phase}/3</strong><p>${format(boss.progress)} / ${format(boss.target)} ${resourceName()} · ${Math.max(0,(boss.expiresAt-now())/1000).toFixed(0)} s</p><p>${action.icon} ${format(boss.actionProgress||0)} / ${format(boss.actionTarget)} ${action.label}</p><small>${phaseHint}</small>`}else els.bossCard.innerHTML=`<strong>${chapter.icon} ${isMars()?"Anomalie majeure":"Tempête-boss"} : ${chapter.name}</strong><p>Réserve : ${format(Math.max(1000,baseProduction()*chapter.goal))} ${resourceName()} · ${BOSS_DURATION} s. Il faudra aussi ${actionTarget} ${action.label}.</p><button type="button" data-start-boss="${chapter.id}">Affronter ${isMars()?"l’anomalie":"la tempête"}</button>`}
   else els.bossCard.innerHTML=`<strong>Prochain jalon : ${chapter.name}</strong><p>${isMars()?"Développe la colonie pour poursuivre la conquête.":"Continue à développer la fabrique pour progresser dans l’Expédition."}</p>`;
   if(state.finalBuilt)els.finalProject.innerHTML=`<strong>${isMars()?"❤️ Cœur de Mars éveillé":"☀️ Climatologue du Multivers construit"}</strong><p>${isMars()?"La planète rouge respire enfin.":"Une transmission inconnue attend d’être déchiffrée."}</p><button type="button" data-open-finale>${isMars()?"Voir la conclusion":"Ouvrir la transmission"}</button>`;
   else if(!chapter){const cost=finalCost();els.finalProject.innerHTML=`<strong>${isMars()?"❤️ Réacteur d’Éden martien":"☀️ Climatologue du Multivers"}</strong><p>${isMars()?"La construction ultime, enfouie sous Olympus Mons.":"La construction finale de cette météo."}</p><button type="button" data-build-final ${state.drops<cost?"disabled":""}>Construire · ${format(cost)} ◆</button>`}else els.finalProject.innerHTML="";
@@ -555,7 +567,7 @@ function renderUnits(){
   els.unlockedBadge.textContent=`${unlocked.length} / ${units.length}`;
   const cards=unlocked.map(u=>{
     const quote=purchaseQuote(u),owned=state.owned[u.id],next=nextMilestone(u),previous=[0,...MILESTONES].filter(m=>m<=owned).pop()||0,progress=next?Math.min(100,(owned-previous)/(next-previous)*100):100,affordable=quote.count&&state.drops>=quote.cost,resonance=marsResonanceMultiplier(u),resonant=isMars()&&resonance>1;
-    return `<button class="unit-card ${affordable?"affordable":""} ${resonant?"resonant":""}" type="button" data-unit="${u.id}" ${!affordable?"disabled":""}><span class="unit-icon">${u.icon}</span><span class="unit-info"><span class="unit-title"><strong>${u.name}</strong><em>×${format(owned)}</em></span><small>${u.description} · ${format(u.production*unitMultiplier(u)*resonance*allMultiplier()*permanentMultiplier()*contractMultiplier())}/s chacun ${resonant?"· RÉSONANCE":""}</small><span class="unit-progress"><i style="--progress:${progress}%"></i><small>${next?`prochain cap ${format(next)}`:"tous les caps franchis"}</small></span></span><span class="unit-buy"><b class="unit-price">${quote.count?format(quote.cost):"∞"} ◆</b><small>${quote.count?`Acheter ×${format(quote.count)}`:"Limite atteinte"}</small></span></button>`;
+    return `<button class="unit-card ${affordable?"affordable":""} ${resonant?"resonant":""}" type="button" data-unit="${u.id}" ${!affordable?"disabled":""}><span class="unit-icon">${u.icon}</span><span class="unit-info"><span class="unit-title"><strong>${u.name}</strong><em>×${format(owned)}</em></span><small>${u.description} · ${format(u.production*unitMultiplier(u)*resonance*allMultiplier()*permanentMultiplier()*contractMultiplier())}/s chacun ${resonant?"· RÉSONANCE":""}</small><span class="unit-progress"><i style="--progress:${progress}%"></i><small>${next?`prochain cap ${format(next)}`:"tous les caps franchis"}</small></span></span><span class="unit-buy"><b class="unit-price">${format(quote.cost)} ◆</b><small>${quote.count?`Acheter ×${format(quote.count)}`:"Pas encore abordable"}</small></span></button>`;
   });
   if(locked)cards.push(`<div class="locked-unit"><span class="unit-icon">${locked.icon}</span><span><strong>Prochain automate : ${locked.name}</strong><small>Se révèle à ${format(locked.baseCost*.18)} ${resourceName()} ou avec ${units[locked.index-1].name}</small></span></div>`);
   if(unlocked.length<units.length-1)cards.push(`<p class="more-units">+ ${units.length-unlocked.length-1} technologies encore inconnues</p>`);
