@@ -27,11 +27,13 @@ assert.equal(baseProduction(),2,"Dix ventilateurs doivent produire 2 gouttes/s a
 state.upgrades.push(unitUpgradeId(units[0],0),unitUpgradeId(units[0],1),unitUpgradeId(units[0],2));
 assert.equal(unitMultiplier(units[0]),8,"Les trois premiers paliers doivent cumuler trois multiplicateurs ×2");
 state.runTotal=1e9;state.drops=1e9;state.lifetime=1e9;state.pendingPath="storm";initialized=true;
+state.buyMode="max";
 assert.equal(canPrestige(),true,"La première Aube doit être disponible à 1 milliard");
 prestige();
 assert.equal(state.cycles,1,"Le prestige doit accorder exactement une Aube");
 assert.equal(state.dawns,1,"Le prestige doit créditer une Aube dépensable");
 assert.equal(state.currentPath,"storm","Le cycle doit commencer dans la voie choisie");
+assert.equal(state.buyMode,"max","Le mode d’achat doit être conservé après un cycle");
 assert.equal(permanentMultiplier(),1.25,"Un cycle doit apporter le bonus de base de 25 %");
 buyDawn("first_light");
 assert.equal(dawnBalance(),0,"L’Aube achetée doit quitter le solde disponible");
