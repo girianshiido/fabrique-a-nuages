@@ -12,7 +12,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body data-sky="0">
   <div class="world" aria-hidden="true">
@@ -25,7 +25,7 @@
   <main class="game-shell">
     <header class="topbar">
       <a class="brand" href="#" aria-label="La Fabrique à Nuages, revenir en haut">
-        <span class="brand-mark">☁</span><span><strong>La Fabrique à Nuages</strong><small>L’empire météo</small></span>
+        <span class="brand-mark" id="brandMark">☁</span><span><strong id="brandTitle">La Fabrique à Nuages</strong><small id="brandSubtitle">L’empire météo</small></span>
       </a>
       <div class="top-resources">
         <button class="mini-resource dawn-resource" id="dawnTreeButton" type="button" aria-label="Ouvrir l'arbre des Aubes"><span>◈</span><p><small>Aubes disponibles</small><b id="dawnCount">0</b></p></button>
@@ -39,7 +39,7 @@
 
     <section class="resource-card" aria-live="polite">
       <span class="drop-gem">◆</span>
-      <div class="resource-main"><strong id="dropCount">0</strong><span>gouttes</span></div>
+      <div class="resource-main"><strong id="dropCount">0</strong><span id="resourceName">gouttes</span></div>
       <div class="resource-rate"><span class="live-dot"></span><b id="perSecond">0</b> / seconde</div>
       <div class="permanent-boost"><small>Bonus permanent</small><b id="permanentBoost">×1</b></div>
     </section>
@@ -57,7 +57,7 @@
             <span class="cloud-face"><i class="eye left"></i><i class="eye right"></i><i class="mouth"></i><i class="cheek left"></i><i class="cheek right"></i></span>
           </button>
         </div>
-        <p class="click-value">Condensation manuelle <b>+<span id="perClick">1</span></b></p>
+        <p class="click-value"><span id="clickActionName">Condensation manuelle</span> <b>+<span id="perClick">1</span></b></p>
         <div class="pressure-wrap">
           <div class="pressure-copy"><span>Pression atmosphérique</span><b id="pressureLabel">0 / 20</b></div>
           <div class="pressure-bar" role="progressbar" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><i id="pressureFill"></i><em></em></div>
@@ -89,7 +89,7 @@
 
         <div class="tab-page active" id="automatesPage">
           <div class="panel-head">
-            <div><p class="eyebrow">Chaîne de production</p><h1>Automates météo</h1></div>
+            <div><p class="eyebrow" id="productionEyebrow">Chaîne de production</p><h1 id="automatesHeading">Automates météo</h1></div>
             <div class="buy-modes" aria-label="Quantité d’achat">
               <button type="button" data-mode="1" class="active">×1</button><button type="button" data-mode="10">×10</button><button type="button" data-mode="100">×100</button><button type="button" data-mode="max">Max</button>
             </div>
@@ -99,7 +99,7 @@
 
         <div class="tab-page" id="upgradesPage" hidden>
           <div class="panel-head"><div><p class="eyebrow">Laboratoire</p><h1>Innovations disponibles</h1></div><p class="shop-note">Achetées = remplacées</p></div>
-          <div class="upgrade-summary"><span><b id="upgradeCount">0</b> innovations installées</span><span><b>384</b> paliers d’automates</span></div>
+          <div class="upgrade-summary"><span><b id="upgradeCount">0</b> innovations installées</span><span><b id="milestoneTotal">384</b> paliers d’automates</span></div>
           <div id="upgradeList" class="upgrade-list"></div>
           <div class="locked-preview"><h2>Prochaines recherches</h2><div id="lockedUpgradeList"></div></div>
         </div>
@@ -116,7 +116,7 @@
           <section class="path-section"><div class="section-title"><h2>Recherches de voie</h2><span id="pathTechCount">0 / 8</span></div><div class="path-tech-list" id="pathTechList"></div></section>
           <section class="path-section"><div class="section-title"><h2>Projets monumentaux</h2><span>Une relique par projet</span></div><div class="project-list" id="projectList"></div></section>
           <section class="relic-section"><span>✦ Reliques conservées</span><b id="relicCount">0</b><small id="relicDescription">+0 % de production permanente</small></section>
-          <section class="expedition-section"><div class="section-title"><h2>Expédition du Multivers</h2><span id="expeditionProgress">0 / 12</span></div><div class="expedition-track" id="expeditionTrack"></div><div class="boss-card" id="bossCard"></div></section>
+          <section class="expedition-section"><div class="section-title"><h2 id="expeditionHeading">Expédition du Multivers</h2><span id="expeditionProgress">0 / 12</span></div><div class="expedition-track" id="expeditionTrack"></div><div class="boss-card" id="bossCard"></div></section>
           <section class="final-project" id="finalProject"></section>
           <section class="achievement-section"><div class="section-title"><h2>Succès</h2><span id="achievementCount">0 / 12</span></div><div id="achievementList" class="achievement-list"></div></section>
         </div>
@@ -143,8 +143,8 @@
   </dialog>
 
   <dialog id="finaleDialog" class="finale-dialog">
-    <div class="finale-stars">✦ ✧ ✦</div><p class="eyebrow">Expédition accomplie</p><h2>Le Climatologue du Multivers est éveillé.</h2><p>Tu as stabilisé toutes les météos connues. Mais l’infini réserve encore des ciels inexplorés.</p>
-    <div class="finale-reward">Nouvelle Météo+ <b id="newGamePlusLevel">1</b></div>
+    <div class="finale-stars">✦ ✧ ✦</div><p class="eyebrow" id="finaleEyebrow">Expédition accomplie</p><h2 id="finaleTitle">Le Climatologue du Multivers est éveillé.</h2><p id="finaleText">Tu as stabilisé toutes les météos connues. Mais l’infini réserve encore des ciels inexplorés.</p>
+    <div class="finale-reward" id="finaleReward">Nouvelle Météo+ <b id="newGamePlusLevel">1</b></div>
     <button class="primary-button" id="newGamePlusButton" type="button">Ouvrir un nouveau multivers</button>
     <button class="secondary-dialog" data-close="finaleDialog" type="button">Continuer cette météo</button>
   </dialog>
@@ -161,6 +161,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="achievement" id="achievement" role="status" aria-live="polite" hidden><span>✦</span><div><small>Nouveau palier</small><b></b></div></div>
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

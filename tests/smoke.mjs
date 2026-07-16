@@ -71,6 +71,18 @@ assert.equal(state.expedition.includes("storm_boss"),true,"Une tempête-boss doi
 state.stats.clicks=100;updateAchievements();
 assert.equal(state.unlockedAchievements.includes("clicker"),true,"Les succès doivent être débloqués automatiquement");
 state.finalBuilt=true;state.newGamePlus=0;beginNewGamePlus();
+assert.equal(state.planet,"mars","La conclusion terrestre doit révéler Mars");
+assert.equal(units.length,30,"Mars doit contenir 30 nouveaux automates");
+assert.equal(MILESTONES.length,20,"Les automates martiens doivent avoir une progression plus longue");
+assert.equal(expeditionChapters.length,15,"La conquête martienne doit proposer quinze jalons");
+assert.equal(unitMilestonePower(units[0],11),7777777,"Le 500e premier automate doit provoquer un cap spectaculaire");
+assert.equal(unitMilestonePower(units[28],0),1000,"Les automates colossaux doivent commencer par un palier ×1000");
+state.owned.dust_scoop=500;state.owned.mars_heart=1;clockOffset=-Date.now()+1000;
+assert.equal(marsResonancePhase(),0,"Le test doit placer Mars dans l’Écho des pionniers");
+assert.equal(marsResonanceMultiplier(units[0])>marsResonanceMultiplier(units[29]),true,"La résonance doit pouvoir rendre le premier automate dominant");
+clockOffset=0;
+assert.equal(finalCost(),1e78,"La fin martienne doit être beaucoup plus éloignée");
+state.finalBuilt=true;beginNewGamePlus();
 assert.equal(state.newGamePlus,1,"Nouvelle Météo+ doit augmenter le niveau permanent");
 assert.equal(newGamePlusMultiplier(),1.5,"Nouvelle Météo+ doit accélérer la progression suivante");
 `;

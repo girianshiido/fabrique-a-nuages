@@ -1,6 +1,6 @@
 # La Fabrique à Nuages
 
-Un jeu incrémental en français, inspiré de *Cookie Clicker* et *Adventure Capitalist*. Pressez le nuage, récoltez des gouttes et développez un empire météo automatisé à travers six ères.
+Un jeu incrémental en français, inspiré de *Cookie Clicker* et *Adventure Capitalist*. Pressez le nuage, récoltez des gouttes et développez un empire météo automatisé à travers plusieurs mondes.
 
 ## Jouer en local
 
@@ -28,6 +28,12 @@ Le jeu inclut :
 - une Expédition du Multivers en 12 jalons, avec trois tempêtes-boss à vaincre ;
 - des boss en trois phases, avec réserve de gouttes et objectif d’action spécifique ;
 - le Climatologue du Multivers, une construction de conclusion ;
+- une transition narrative surprise vers une seconde campagne martienne ;
+- 30 automates propres à Mars et 600 paliers asymétriques allant de ×3 à ×7 777 777 ;
+- des colosses très coûteux dont chaque cap vaut ×1 000 ;
+- une résonance orbitale qui rend régulièrement les anciens automates dominants ;
+- un décor rouge, une nouvelle ressource, des Sols, doctrines, missions et anomalies martiennes ;
+- une conquête de Mars en 15 jalons et une seconde fin beaucoup plus longue à atteindre ;
 - un mode Nouvelle Météo+ qui relance une campagne avec un bonus permanent supplémentaire ;
 - 12 succès à collectionner ;
 - l’export et l’import de sauvegarde, ainsi qu’une option pour réduire les animations ;
