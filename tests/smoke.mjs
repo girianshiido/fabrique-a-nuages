@@ -80,6 +80,17 @@ assert.equal(unitMilestonePower(units[28],0),1000,"Les automates colossaux doive
 state.owned.dust_scoop=500;state.owned.mars_heart=1;clockOffset=-Date.now()+1000;
 assert.equal(marsResonancePhase(),0,"Le test doit placer Mars dans l’Écho des pionniers");
 assert.equal(marsResonanceMultiplier(units[0])>marsResonanceMultiplier(units[29]),true,"La résonance doit pouvoir rendre le premier automate dominant");
+const strongestRaw=rawUnitProduction(units[29]),pioneerRaw=rawUnitProduction(units[0]);
+const resonantPioneer=pioneerRaw*marsResonanceMultiplier(units[0]);
+assert.equal(resonantPioneer>=strongestRaw*2&&resonantPioneer<=strongestRaw*3,true,"Un ancien automate résonant doit dépasser le meilleur automate sans emballement");
+assert.equal(baseProduction()/stableProduction()<5,true,"La résonance d’un pionnier ne doit plus faire exploser toute l’économie");
+state.stats.contractsCompleted=0;
+assert.equal(contractTarget(contractTemplates[1]),stableProduction()*35,"La cible d’un contrat doit ignorer la résonance");
+assert.equal(contractReward(),stableProduction()*60,"La récompense d’un contrat doit ignorer la résonance");
+state.contract={id:"drops",target:baseProduction()*35,progress:baseProduction()*7,startedAt:0,expiresAt:Date.now()+60000};state.economyVersion=1;
+rebalanceLegacyEconomy();
+assert.equal(state.contract.target,stableProduction()*35,"Un ancien contrat martien doit être recalculé sans résonance");
+assert.equal(Math.round(state.contract.progress/state.contract.target*100),20,"La migration doit conserver l’avancement relatif du contrat");
 clockOffset=0;
 assert.equal(finalCost(),1e78,"La fin martienne doit être beaucoup plus éloignée");
 state.finalBuilt=true;beginNewGamePlus();

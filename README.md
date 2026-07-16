@@ -31,7 +31,7 @@ Le jeu inclut :
 - une transition narrative surprise vers une seconde campagne martienne ;
 - 30 automates propres à Mars et 600 paliers asymétriques allant de ×3 à ×7 777 777 ;
 - des colosses très coûteux dont chaque cap vaut ×1 000 ;
-- une résonance orbitale qui rend régulièrement les anciens automates dominants ;
+- une résonance orbitale qui rend régulièrement les anciens automates dominants, avec une puissance relative contrôlée ;
 - un décor rouge, une nouvelle ressource, des Sols, doctrines, missions et anomalies martiennes ;
 - une conquête de Mars en 15 jalons et une seconde fin beaucoup plus longue à atteindre ;
 - un mode Nouvelle Météo+ qui relance une campagne avec un bonus permanent supplémentaire ;
