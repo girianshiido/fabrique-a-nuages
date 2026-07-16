@@ -53,6 +53,18 @@ state.drops=1e20;
 buyProject("project_storm_coil");
 assert.equal(state.relics.storm,1,"Un projet doit créer une relique persistante");
 assert.equal(relicMultiplier(),1.1,"Une relique doit renforcer définitivement la production");
+state.expedition=[];state.lifetime=100;updateExpedition();
+assert.equal(state.expedition[0],"first_drop","L’expédition doit valider ses jalons dans l’ordre");
+state.expedition=expeditionChapters.slice(0,7).map(chapter=>chapter.id);state.owned.fan=100;state.activeBoss=null;
+startBoss();
+assert.equal(state.activeBoss.id,"storm_boss","La première tempête-boss doit pouvoir démarrer");
+recordBossProgress(state.activeBoss.target);
+assert.equal(state.expedition.includes("storm_boss"),true,"Une tempête-boss doit valider son jalon à l’objectif");
+state.stats.clicks=100;updateAchievements();
+assert.equal(state.unlockedAchievements.includes("clicker"),true,"Les succès doivent être débloqués automatiquement");
+state.finalBuilt=true;state.newGamePlus=0;beginNewGamePlus();
+assert.equal(state.newGamePlus,1,"Nouvelle Météo+ doit augmenter le niveau permanent");
+assert.equal(newGamePlusMultiplier(),1.5,"Nouvelle Météo+ doit accélérer la progression suivante");
 `;
 
 vm.runInNewContext(`${definitions}\n${checks}`, {...context,assert});

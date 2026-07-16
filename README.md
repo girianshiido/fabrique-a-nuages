@@ -25,6 +25,11 @@ Le jeu inclut :
 - trois voies d’ère — Orages, Industrie et Temps — choisies à chaque Aube ;
 - huit recherches exclusives et trois projets monumentaux par voie ;
 - des reliques de projet conservées entre les cycles.
+- une Expédition du Multivers en 12 jalons, avec trois tempêtes-boss à vaincre ;
+- le Climatologue du Multivers, une construction de conclusion ;
+- un mode Nouvelle Météo+ qui relance une campagne avec un bonus permanent supplémentaire ;
+- 12 succès à collectionner ;
+- l’export et l’import de sauvegarde, ainsi qu’une option pour réduire les animations ;
 - une ambiance visuelle qui évolue sur six ères ;
 - des averses temporaires, statistiques et animations ;
 - une sauvegarde automatique avec jusqu'à 12 heures de production hors ligne, extensibles par amélioration.

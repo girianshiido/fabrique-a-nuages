@@ -7,7 +7,7 @@
   <meta name="description" content="La Fabrique à Nuages, un jeu incrémental météorologique.">
   <title>La Fabrique à Nuages</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body data-sky="0">
   <div class="world" aria-hidden="true">
@@ -111,6 +111,9 @@
           <section class="path-section"><div class="section-title"><h2>Recherches de voie</h2><span id="pathTechCount">0 / 8</span></div><div class="path-tech-list" id="pathTechList"></div></section>
           <section class="path-section"><div class="section-title"><h2>Projets monumentaux</h2><span>Une relique par projet</span></div><div class="project-list" id="projectList"></div></section>
           <section class="relic-section"><span>✦ Reliques conservées</span><b id="relicCount">0</b><small id="relicDescription">+0 % de production permanente</small></section>
+          <section class="expedition-section"><div class="section-title"><h2>Expédition du Multivers</h2><span id="expeditionProgress">0 / 12</span></div><div class="expedition-track" id="expeditionTrack"></div><div class="boss-card" id="bossCard"></div></section>
+          <section class="final-project" id="finalProject"></section>
+          <section class="achievement-section"><div class="section-title"><h2>Succès</h2><span id="achievementCount">0 / 12</span></div><div id="achievementList" class="achievement-list"></div></section>
         </div>
       </section>
     </div>
@@ -134,16 +137,25 @@
     <div class="dawn-tree" id="dawnTree"></div>
   </dialog>
 
+  <dialog id="finaleDialog" class="finale-dialog">
+    <div class="finale-stars">✦ ✧ ✦</div><p class="eyebrow">Expédition accomplie</p><h2>Le Climatologue du Multivers est éveillé.</h2><p>Tu as stabilisé toutes les météos connues. Mais l’infini réserve encore des ciels inexplorés.</p>
+    <div class="finale-reward">Nouvelle Météo+ <b id="newGamePlusLevel">1</b></div>
+    <button class="primary-button" id="newGamePlusButton" type="button">Ouvrir un nouveau multivers</button>
+    <button class="secondary-dialog" data-close="finaleDialog" type="button">Continuer cette météo</button>
+  </dialog>
+
   <dialog id="helpDialog">
     <button class="dialog-close" data-close="helpDialog" type="button" aria-label="Fermer">×</button>
     <p class="eyebrow">Guide de l’observateur</p><h2>Une météo sans limite</h2>
     <ol><li>Presse le nuage et construis tes premiers automates.</li><li>Chaque automate possède 16 paliers, de 1 à 2 500 exemplaires.</li><li>Les innovations apparaissent lorsque leurs conditions sont remplies, puis disparaissent après achat.</li><li>Les contrats météo donnent des objectifs temporaires ; chaque réussite augmente durablement la production.</li><li>Capture les phénomènes rares pour profiter de leur bonus temporaire.</li><li>Une fois l’objectif d’ère atteint, redémarre pour gagner une Aube et améliorer la Constellation.</li></ol>
     <p>La sauvegarde est automatique. L’heure réseau restitue jusqu’à 12 heures de production hors ligne.</p>
+    <div class="save-actions"><button id="exportSave" type="button">Exporter la sauvegarde</button><button id="importSave" type="button">Importer une sauvegarde</button><button id="effectsButton" type="button">Réduire les animations</button></div>
     <button class="reset-button" id="resetButton" type="button">Effacer définitivement la sauvegarde</button>
   </dialog>
+  <input id="importFile" type="file" accept="application/json" hidden>
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="achievement" id="achievement" role="status" aria-live="polite" hidden><span>✦</span><div><small>Nouveau palier</small><b></b></div></div>
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
