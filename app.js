@@ -83,9 +83,31 @@ const contractTemplates = [
   {id:"units",icon:"⚙️",name:"Montée en cadence",description:"Achète {target} automates avant la fin",metric:"units",time:90}
 ];
 
+const paths = [
+  {id:"storm",icon:"⚡",name:"Maître des orages",tagline:"Averses furieuses et clics explosifs",color:"#6654bf",pale:"#ece9ff",bonus:"Averses +1 multiplicateur",kind:"storm"},
+  {id:"engineer",icon:"⚙️",name:"Ingénieur des nuages",tagline:"Automates massifs et chantiers efficaces",color:"#337f78",pale:"#e2f5ee",bonus:"Automates −8 %",kind:"engineer"},
+  {id:"chrono",icon:"⌛",name:"Chronomancien climatique",tagline:"Temps, contrats et phénomènes rares",color:"#9060ac",pale:"#f3e7fa",bonus:"Contrats +50 % de récompense",kind:"chrono"}
+];
+const pathTechs = {
+  storm:[
+    ["spark","Étincelle captive","⚡",2e9,"rainPower",1,"Averses +1 multiplicateur"],["thunderhand","Main de tonnerre","☝️",1.4e10,"click",3,"Condensation manuelle ×3"],["wetwire","Fil humide","🔌",9e10,"rainDuration",12,"Averses +12 secondes"],["overcharge","Surcharge","💥",7e11,"rainPower",2,"Averses +2 multiplicateurs"],["blackcloud","Nuage noir","🌩️",6e12,"all",1.7,"Production totale ×1,7"],["lightningrod","Paratonnerre","📍",5e13,"pressure",-3,"Averse 3 clics plus tôt"],["stormvault","Coffre d’orage","🔋",5e14,"event",2,"Événements de tempête ×2"],["tempest","Tempête parfaite","🌀",7e15,"all",3,"Production totale ×3"]
+  ],
+  engineer:[
+    ["blueprint","Plan directeur","📐",2e9,"cost",.92,"Automates −8 %"],["conveyor","Convoyeur de brume","〰️",1.4e10,"all",1.5,"Production totale ×1,5"],["factory","Usine suspendue","🏭",9e10,"unit",1.5,"Chaque automate ×1,5"],["assembly","Ligne céleste","🧱",7e11,"cost",.88,"Automates −12 %"],["robots","Robots pluviométriques","🤖",6e12,"all",2,"Production totale ×2"],["blueprint2","Plans auto-répliquants","📋",5e13,"unit",2,"Chaque automate ×2"],["supply","Approvisionnement infini","📦",5e14,"contract",1.5,"Contrats +50 % récompense"],["megaline","Mégaligne","🏗️",7e15,"all",3,"Production totale ×3"]
+  ],
+  chrono:[
+    ["second","Seconde pliée","⏱️",2e9,"contract",1.5,"Contrats +50 % récompense"],["archive","Archive vivante","📚",1.4e10,"offline",2,"Gains hors ligne ×2"],["loop","Boucle douce","🔁",9e10,"event",2,"Événements rares ×2"],["hourglass","Sablier d’orage","⌛",7e11,"contractBonus",.03,"Chaque contrat +3 % production"],["tomorrow","Pluie de demain","🌦️",6e12,"offlineHours",12,"+12 h de gains hors ligne"],["rewind","Rembobinage","⏪",5e13,"cost",.9,"Automates −10 %"],["moment","Instant parfait","🕰️",5e14,"event",3,"Événements rares ×3"],["eternity","Éternité météo","♾️",7e15,"all",3,"Production totale ×3"]
+  ]
+};
+const pathProjects = {
+  storm:[["coil","Bobine de foudre","🔋",8e12,"La première centrale à éclairs.","rainPower",1],["dam","Barrage de mousson","🌊",7e14,"Retient une saison entière de pluie.","all",1.5],["station","Station d’orage orbitale","🛰️",8e16,"Canalise les tempêtes depuis le ciel.","all",2]],
+  engineer:[["shipyard","Chantier céleste","🏗️",8e12,"Assemble les automates à l’échelle des nuages.","cost",.85],["city","Mégacité flottante","🏙️",7e14,"Un bassin industriel au-dessus des océans.","all",1.5],["foundry","Fonderie stratosphérique","🔨",8e16,"Fabrique des climats en continu.","all",2]],
+  chrono:[["clock","Horloge de mousson","🕰️",8e12,"Synchronise chaque goutte avec le temps.","offline",3],["library","Bibliothèque des futurs","📖",7e14,"Prévoit toutes les averses possibles.","event",2],["gate","Porte des saisons","🚪",8e16,"Traverse les cycles sans perdre le rythme.","all",2]]
+};
+
 const initialOwned = () => Object.fromEntries(units.map(u=>[u.id,0]));
 const initialState = () => ({
-  drops:0,runTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],
+  drops:0,runTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],currentPath:null,pendingPath:null,pathUpgrades:[],projects:[],relics:{storm:0,engineer:0,chrono:0},
   activeEvent:null,nextEventAt:Date.now()+60000,contract:null,nextContractAt:Date.now()+6000,
   buyMode:"1",sound:true,startedAt:Date.now(),runStartedAt:Date.now(),lastTick:Date.now(),savedAt:Date.now(),
   stats:{clicks:0,unitsBought:0,upgradesBought:0,bestPps:0,offlineEarned:0,contractsCompleted:0,contractsFailed:0,eventsCaptured:0}
@@ -106,7 +128,7 @@ const els = {
   lockedUpgrades:$("#lockedUpgradeList"),upgradeCount:$("#upgradeCount"),upgradeBadge:$("#upgradeBadge"),unlockedBadge:$("#unlockedUnitsBadge"),
   records:$("#recordGrid"),eraTrack:$("#eraTrack"),eraLabel:$("#eraLabel"),toast:$("#toast"),achievement:$("#achievement"),sound:$("#soundButton"),
   help:$("#helpDialog"),prestige:$("#prestigeDialog"),prestigeButton:$("#prestigeButton"),prestigeTitle:$("#prestigeTitle"),prestigeProgress:$("#prestigeProgress"),
-  prestigeDescription:$("#prestigeDescription"),prestigeReward:$("#prestigeReward"),nextCycleInfo:$("#nextCycleInfo"),timeStatus:$("#timeStatus")
+  prestigeDescription:$("#prestigeDescription"),prestigeReward:$("#prestigeReward"),nextCycleInfo:$("#nextCycleInfo"),timeStatus:$("#timeStatus"),pathPicker:$("#pathPicker"),pathHeading:$("#pathHeading"),pathTagline:$("#pathTagline"),pathOverview:$("#pathOverview"),pathTechCount:$("#pathTechCount"),pathTechList:$("#pathTechList"),projectList:$("#projectList"),relicCount:$("#relicCount"),relicDescription:$("#relicDescription"),strategyBadge:$("#strategyBadge")
   ,dawnDialog:$("#dawnDialog"),dawnBalance:$("#dawnBalance"),dawnSpent:$("#dawnSpent"),dawnTree:$("#dawnTree"),eventBanner:$("#eventBanner"),eventIcon:$("#eventIcon"),eventTitle:$("#eventTitle"),eventDescription:$("#eventDescription"),eventTimer:$("#eventTimer"),contractCard:$("#contractCard"),contractTimer:$("#contractTimer"),contractTitle:$("#contractTitle"),contractDescription:$("#contractDescription"),contractFill:$("#contractFill"),contractReward:$("#contractReward")
 };
 
@@ -118,7 +140,7 @@ function load(){
     const legacyTotal=Number(saved.total)||0;
     const migratedUpgrades=[...new Set((saved.upgrades||[]).map(id=>legacyMap[id]||id).filter(id=>globalUpgrades.some(u=>u.id===id)||/^unit_[a-z]+_\d+$/.test(id)))];
     const cycles=Number(saved.cycles)||0;
-    return {...fresh,...saved,runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:{...fresh.stats,...saved.stats},cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[]};
+    return {...fresh,...saved,runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:{...fresh.stats,...saved.stats},cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[],currentPath:paths.some(path=>path.id===saved.currentPath)?saved.currentPath:null,pendingPath:null,pathUpgrades:Array.isArray(saved.pathUpgrades)?saved.pathUpgrades:[],projects:Array.isArray(saved.projects)?saved.projects:[],relics:{...fresh.relics,...saved.relics}};
   }catch{return initialState()}
 }
 function now(){return Date.now()+clockOffset}
@@ -146,21 +168,29 @@ function hasDawn(id){return state.dawnUpgrades.includes(id)}
 function dawnNode(id){return dawnNodes.find(node=>node.id===id)}
 function dawnBalance(){return Math.max(0,state.dawns-state.dawnSpent)}
 function dawnEffect(kind,base,combine=(a,b)=>a*b){return dawnNodes.filter(node=>node.kind===kind&&hasDawn(node.id)).reduce((value,node)=>combine(value,node.value),base)}
+function currentPath(){return paths.find(path=>path.id===state.currentPath)||null}
+function pathTechList(){return state.currentPath?(pathTechs[state.currentPath]||[]).map(([id,name,icon,cost,kind,value,description],index)=>({id:`path_${state.currentPath}_${id}`,rawId:id,name,icon,cost,kind,value,description,index})):[]}
+function pathProjectList(){return state.currentPath?(pathProjects[state.currentPath]||[]).map(([id,name,icon,cost,description,kind,value],index)=>({id:`project_${state.currentPath}_${id}`,rawId:id,name,icon,cost,description,kind,value,index})):[]}
+function hasPathUpgrade(id){return state.pathUpgrades.includes(id)}
+function pathEffect(kind,base,combine=(a,b)=>a*b){return pathTechList().filter(item=>item.kind===kind&&hasPathUpgrade(item.id)).reduce((value,item)=>combine(value,item.value),base)}
+function projectEffect(kind,base,combine=(a,b)=>a*b){return pathProjectList().filter(item=>item.kind===kind&&state.projects.includes(item.id)).reduce((value,item)=>combine(value,item.value),base)}
+function relicCount(){return Object.values(state.relics).reduce((sum,count)=>sum+count,0)}
+function relicMultiplier(){return 1+relicCount()*.1}
 function globalEffect(type,base,combine=(a,b)=>a*b){return globalUpgrades.filter(u=>u.type===type&&hasUpgrade(u.id)).reduce((value,u)=>combine(value,u.value),base)}
-function permanentMultiplier(){return (1+state.cycles*.25)*dawnEffect("all",1)}
-function contractMultiplier(){return 1+state.stats.contractsCompleted*(hasDawn("wide_horizon")?.04:.02)}
-function allMultiplier(){return globalEffect("all",1)}
-function clickMultiplier(){return globalEffect("click",1)*dawnEffect("click",1)}
-function offlineMultiplier(){return globalEffect("offline",1)*dawnEffect("offline",1)}
-function offlineHours(){return 12+globalEffect("offlineHours",0,(a,b)=>a+b)}
-function costMultiplier(){return globalEffect("cost",1)*dawnEffect("cost",1)}
+function permanentMultiplier(){return (1+state.cycles*.25)*dawnEffect("all",1)*relicMultiplier()}
+function contractMultiplier(){return 1+state.stats.contractsCompleted*(hasDawn("wide_horizon")?.04:.02)*pathEffect("contractBonus",1,(a,b)=>a*b)}
+function allMultiplier(){return globalEffect("all",1)*pathEffect("all",1)*projectEffect("all",1)}
+function clickMultiplier(){return globalEffect("click",1)*dawnEffect("click",1)*pathEffect("click",1)}
+function offlineMultiplier(){return globalEffect("offline",1)*dawnEffect("offline",1)*pathEffect("offline",1)*projectEffect("offline",1)}
+function offlineHours(){return 12+globalEffect("offlineHours",0,(a,b)=>a+b)+pathEffect("offlineHours",0,(a,b)=>a+b)}
+function costMultiplier(){return globalEffect("cost",1)*dawnEffect("cost",1)*pathEffect("cost",1)*projectEffect("cost",1)}
 function pressureMax(){return Math.max(8,20+globalEffect("pressure",0,(a,b)=>a+b))}
-function rainDuration(){return 15+globalEffect("rainDuration",0,(a,b)=>a+b)}
-function rainPower(){return 2+globalEffect("rainPower",0,(a,b)=>a+b)+dawnEffect("rainPower",0,(a,b)=>a+b)}
+function rainDuration(){return 15+globalEffect("rainDuration",0,(a,b)=>a+b)+pathEffect("rainDuration",0,(a,b)=>a+b)}
+function rainPower(){return 2+globalEffect("rainPower",0,(a,b)=>a+b)+dawnEffect("rainPower",0,(a,b)=>a+b)+pathEffect("rainPower",0,(a,b)=>a+b)+projectEffect("rainPower",0,(a,b)=>a+b)+(state.currentPath==="storm"?1:0)}
 function isRaining(){return state.rainUntil>now()}
 function rainMultiplier(){return isRaining()?rainPower():1}
 function activeEvent(){return state.activeEvent&&state.activeEvent.boostUntil>now()?rareEvents.find(event=>event.id===state.activeEvent.id):null}
-function eventMultiplier(kind){const event=activeEvent();return event&&event.kind===kind?event.value*dawnEffect("event",1):1}
+function eventMultiplier(kind){const event=activeEvent();return event&&event.kind===kind?event.value*dawnEffect("event",1)*pathEffect("event",1)*projectEffect("event",1):1}
 function unitUpgradeId(unit,index){return `unit_${unit.id}_${index}`}
 function unitMultiplier(unit,s=state){
   return MILESTONES.reduce((mult,_,index)=>s.upgrades.includes(unitUpgradeId(unit,index))?mult*(index>=12?3:2):mult,1);
@@ -234,7 +264,7 @@ function recordContractProgress(metric,amount){
   contract.progress=Math.min(contract.target,contract.progress+amount);
   if(contract.progress>=contract.target)completeContract();
 }
-function contractReward(){return Math.max(150,baseProduction()*60*(state.stats.contractsCompleted+1))*dawnEffect("contractReward",1)}
+function contractReward(){return Math.max(150,baseProduction()*60*(state.stats.contractsCompleted+1))*dawnEffect("contractReward",1)*pathEffect("contract",1)}
 function completeContract(){
   const reward=contractReward();state.contract=null;state.stats.contractsCompleted++;state.nextContractAt=now()+12000;addDrops(reward);achievement(`Contrat réussi : +${format(reward)} gouttes`);playTone(720,.2);save();
 }
@@ -281,14 +311,25 @@ function prestigeRequirement(cycles=state.cycles){return 1e9*Math.pow(1000,cycle
 function canPrestige(){return state.runTotal>=prestigeRequirement()}
 function openPrestige(){
   const requirement=prestigeRequirement(),ready=canPrestige();
-  els.prestigeDescription.textContent=ready?`Cette ère a produit ${format(state.runTotal)} gouttes. Une nouvelle Aube rendra définitivement toute ta production trois fois plus puissante.`:`Il faut produire ${format(requirement)} gouttes dans cette ère avant de pouvoir recommencer.`;
-  els.prestigeReward.textContent=ready?`+1 Aube · bonus ×${format(Math.pow(3,state.cycles+1))}`:"Aube non disponible";
-  els.nextCycleInfo.textContent=`Après ce redémarrage : ${state.cycles+1} Aube${state.cycles+1>1?"s":""}, objectif suivant ${format(prestigeRequirement(state.cycles+1))}.`;
-  $("#confirmPrestige").disabled=!ready;els.prestige.showModal();
+  state.pendingPath=state.currentPath||null;renderPathPicker();
+  els.prestigeDescription.textContent=ready?`Cette ère a produit ${format(state.runTotal)} gouttes. Une nouvelle Aube sera disponible dans la Constellation, et ta prochaine voie définira le rythme du cycle.`:`Il faut produire ${format(requirement)} gouttes dans cette ère avant de pouvoir recommencer.`;
+  els.prestigeReward.textContent=ready?`+1 Aube · bonus de cycle +25 %`:"Aube non disponible";
+  els.nextCycleInfo.textContent=`Choisis une voie pour la prochaine ère. Les recherches et projets de voie repartiront à zéro, mais les reliques resteront.`;
+  $("#confirmPrestige").disabled=!ready||!state.pendingPath;els.prestige.showModal();
 }
 function prestige(){
-  if(!canPrestige())return;const kept={cycles:state.cycles+1,dawns:state.dawns+1,dawnSpent:state.dawnSpent,dawnUpgrades:state.dawnUpgrades,lifetime:state.lifetime,startedAt:state.startedAt,sound:state.sound,stats:state.stats};
+  if(!canPrestige()||!state.pendingPath)return;const kept={cycles:state.cycles+1,dawns:state.dawns+1,dawnSpent:state.dawnSpent,dawnUpgrades:state.dawnUpgrades,currentPath:state.pendingPath,relics:state.relics,lifetime:state.lifetime,startedAt:state.startedAt,sound:state.sound,stats:state.stats};
   state={...initialState(),...kept};const starter=dawnEffect("start",0,(a,b)=>a+b)*state.cycles;state.drops=starter;state.runTotal=starter;state.lifetime+=starter;initialized=true;els.prestige.close();achievement(`Aube ${state.cycles} reçue — ${format(dawnBalance())} disponible${dawnBalance()>1?"s":""}`);render(true);save();
+}
+function renderPathPicker(){
+  els.pathPicker.innerHTML=paths.map(path=>`<button class="path-choice ${state.pendingPath===path.id?"active":""}" type="button" data-path-choice="${path.id}" style="--path-color:${path.color};--path-pale:${path.pale}"><span>${path.icon}</span><strong>${path.name}</strong><small>${path.bonus}</small></button>`).join("");
+}
+function selectPath(id){if(!paths.some(path=>path.id===id))return;state.pendingPath=id;renderPathPicker();$("#confirmPrestige").disabled=!canPrestige();}
+function buyPathTech(id){
+  const tech=pathTechList().find(item=>item.id===id);if(!tech||hasPathUpgrade(id)||state.drops<tech.cost)return;state.drops-=tech.cost;state.pathUpgrades.push(id);achievement(`${tech.name} maîtrisée`);playTone(620,.13);render(true);save();
+}
+function buyProject(id){
+  const project=pathProjectList().find(item=>item.id===id);if(!project||state.projects.includes(id)||state.drops<project.cost)return;state.drops-=project.cost;state.projects.push(id);state.relics[state.currentPath]=(state.relics[state.currentPath]||0)+1;achievement(`${project.name} achevé : relique obtenue`);playTone(760,.22);render(true);save();
 }
 function canBuyDawn(node){return !hasDawn(node.id)&&(!node.requires||hasDawn(node.requires))&&dawnBalance()>=node.cost}
 function buyDawn(id){
@@ -304,7 +345,7 @@ function render(force=false){
   els.pressure.style.width=`${state.pressure/pMax*100}%`;els.pressureLabel.textContent=`${state.pressure} / ${pMax}`;els.pressureBar.setAttribute("aria-valuemax",pMax);els.pressureBar.setAttribute("aria-valuenow",state.pressure);els.pressureHint.textContent=`À ${pMax} : averse ×${rainPower()} pendant ${rainDuration()} secondes`;
   els.weather.classList.toggle("rain",raining);els.cloud.classList.toggle("rain",raining);els.rainLayer.classList.toggle("active",raining);els.weatherText.textContent=raining?`Averse ×${rainPower()}`:"Ciel calme";els.weatherTimer.textContent=raining?`${Math.max(0,(state.rainUntil-now())/1000).toFixed(1)} s`:"";
   state.stats.bestPps=Math.max(state.stats.bestPps,pps);renderPrestigeTeaser();renderSky();renderEvent();renderContract();
-  if(force||Date.now()-lastFullRender>650){lastFullRender=Date.now();renderUnits();renderUpgrades();renderRecords();renderDawnTree()}
+  if(force||Date.now()-lastFullRender>650){lastFullRender=Date.now();renderUnits();renderUpgrades();renderRecords();renderDawnTree();renderStrategy()}
 }
 function renderPrestigeTeaser(){
   const req=prestigeRequirement(),ready=canPrestige(),percent=Math.min(100,state.runTotal/req*100);
@@ -322,7 +363,14 @@ function renderDawnTree(){
   els.dawnBalance.textContent=dawnBalance();els.dawnSpent.textContent=`${state.dawnSpent} dépensée${state.dawnSpent>1?"s":""}`;
   els.dawnTree.innerHTML=dawnNodes.map(node=>{const bought=hasDawn(node.id),blocked=node.requires&&!hasDawn(node.requires);return `<button class="dawn-node ${bought?"purchased":""}" type="button" data-dawn="${node.id}" ${bought||!canBuyDawn(node)?"disabled":""} style="--node-color:${node.color}"><span class="node-head"><span class="node-icon">${bought?"✓":blocked?"🔒":node.icon}</span><strong>${node.name}</strong></span><p>${blocked?`Nécessite ${dawnNode(node.requires).name}`:node.description}</p><b>${bought?"Inscrite":`${node.cost} Aube${node.cost>1?"s":""}`}</b></button>`}).join("");
 }
-function renderSky(){const highest=units.reduce((max,u)=>state.owned[u.id]>0?Math.max(max,u.index):max,0),stage=Math.min(5,Math.floor(highest/4));document.body.dataset.sky=stage}
+function renderStrategy(){
+  const path=currentPath(),techs=pathTechList(),projects=pathProjectList();els.strategyBadge.textContent=path?path.icon:"—";els.relicCount.textContent=relicCount();els.relicDescription.textContent=`+${(relicMultiplier()-1)*100|0} % de production permanente`;
+  if(!path){els.pathHeading.textContent="Aucune voie choisie";els.pathTagline.textContent="Déclenche une Aube pour choisir une spécialisation.";els.pathOverview.innerHTML=`<span class="path-symbol">✺</span><span><strong>Les trois voies t’attendent</strong><small>Orages, industrie ou maîtrise du temps.</small></span><b>À l’Aube</b>`;els.pathTechCount.textContent="0 / 8";els.pathTechList.innerHTML=`<p class="empty-upgrades">Les recherches exclusives apparaîtront après le premier cycle.</p>`;els.projectList.innerHTML="";return}
+  const completeTech=techs.filter(tech=>hasPathUpgrade(tech.id)).length;els.pathHeading.textContent=path.name;els.pathTagline.textContent=path.tagline;els.pathOverview.innerHTML=`<span class="path-symbol" style="--path-color:${path.color}">${path.icon}</span><span><strong>${path.name}</strong><small>${path.tagline}<br>Bonus inné : ${path.bonus}</small></span><b style="color:${path.color}">${completeTech}/8</b>`;els.pathTechCount.textContent=`${completeTech} / 8`;
+  els.pathTechList.innerHTML=techs.map(tech=>`<button class="path-tech ${hasPathUpgrade(tech.id)?"done":""}" type="button" data-path-tech="${tech.id}" ${hasPathUpgrade(tech.id)||state.drops<tech.cost?"disabled":""} style="--path-color:${path.color};--path-pale:${path.pale}"><i>${hasPathUpgrade(tech.id)?"✓":tech.icon}</i><strong>${tech.name}</strong><p>${tech.description}</p><b>${hasPathUpgrade(tech.id)?"Maîtrisée":`${format(tech.cost)} ◆`}</b></button>`).join("");
+  els.projectList.innerHTML=projects.map(project=>`<button class="project-card ${state.projects.includes(project.id)?"done":""}" type="button" data-project="${project.id}" ${state.projects.includes(project.id)||state.drops<project.cost?"disabled":""} style="--path-color:${path.color};--path-pale:${path.pale}"><i>${state.projects.includes(project.id)?"✦":project.icon}</i><strong>${project.name}</strong><p>${project.description}</p><b>${state.projects.includes(project.id)?"Relique obtenue":`${format(project.cost)} ◆`}</b></button>`).join("");
+}
+function renderSky(){const highest=units.reduce((max,u)=>state.owned[u.id]>0?Math.max(max,u.index):max,0),stage=Math.min(5,Math.floor(highest/4));document.body.dataset.sky=stage;document.body.dataset.path=state.currentPath||""}
 function renderUnits(){
   const unlocked=units.filter(isUnitUnlocked),locked=units.find(u=>!isUnitUnlocked(u));
   els.unlockedBadge.textContent=`${unlocked.length} / ${units.length}`;
@@ -373,6 +421,9 @@ $(".tabs").addEventListener("click",event=>{const button=event.target.closest("[
 els.prestigeButton.addEventListener("click",openPrestige);$("#confirmPrestige").addEventListener("click",prestige);
 $("#dawnTreeButton").addEventListener("click",()=>{renderDawnTree();els.dawnDialog.showModal()});
 els.dawnTree.addEventListener("click",event=>{const button=event.target.closest("[data-dawn]");if(button)buyDawn(button.dataset.dawn)});
+els.pathPicker.addEventListener("click",event=>{const button=event.target.closest("[data-path-choice]");if(button)selectPath(button.dataset.pathChoice)});
+els.pathTechList.addEventListener("click",event=>{const button=event.target.closest("[data-path-tech]");if(button)buyPathTech(button.dataset.pathTech)});
+els.projectList.addEventListener("click",event=>{const button=event.target.closest("[data-project]");if(button)buyProject(button.dataset.project)});
 els.eventBanner.addEventListener("click",claimEvent);
 els.sound.addEventListener("click",()=>{state.sound=!state.sound;els.sound.setAttribute("aria-pressed",state.sound);els.sound.textContent=state.sound?"♪":"×";els.sound.setAttribute("aria-label",state.sound?"Désactiver les sons":"Activer les sons");save()});
 $("#helpButton").addEventListener("click",()=>els.help.showModal());

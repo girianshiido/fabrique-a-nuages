@@ -22,6 +22,9 @@ Le jeu inclut :
 - une Constellation permanente de 10 améliorations achetées avec les Aubes ;
 - des contrats météo temporaires qui augmentent durablement la production ;
 - des phénomènes rares à capturer pour des bonus courts et puissants ;
+- trois voies d’ère — Orages, Industrie et Temps — choisies à chaque Aube ;
+- huit recherches exclusives et trois projets monumentaux par voie ;
+- des reliques de projet conservées entre les cycles.
 - une ambiance visuelle qui évolue sur six ères ;
 - des averses temporaires, statistiques et animations ;
 - une sauvegarde automatique avec jusqu'à 12 heures de production hors ligne, extensibles par amélioration.

@@ -26,11 +26,12 @@ state=initialState();state.owned.fan=10;
 assert.equal(baseProduction(),2,"Dix ventilateurs doivent produire 2 gouttes/s avant bonus");
 state.upgrades.push(unitUpgradeId(units[0],0),unitUpgradeId(units[0],1),unitUpgradeId(units[0],2));
 assert.equal(unitMultiplier(units[0]),8,"Les trois premiers paliers doivent cumuler trois multiplicateurs ×2");
-state.runTotal=1e9;state.drops=1e9;state.lifetime=1e9;initialized=true;
+state.runTotal=1e9;state.drops=1e9;state.lifetime=1e9;state.pendingPath="storm";initialized=true;
 assert.equal(canPrestige(),true,"La première Aube doit être disponible à 1 milliard");
 prestige();
 assert.equal(state.cycles,1,"Le prestige doit accorder exactement une Aube");
 assert.equal(state.dawns,1,"Le prestige doit créditer une Aube dépensable");
+assert.equal(state.currentPath,"storm","Le cycle doit commencer dans la voie choisie");
 assert.equal(permanentMultiplier(),1.25,"Un cycle doit apporter le bonus de base de 25 %");
 buyDawn("first_light");
 assert.equal(dawnBalance(),0,"L’Aube achetée doit quitter le solde disponible");
@@ -45,6 +46,13 @@ state.activeEvent={id:"golden",spawnedAt:0,expiresAt:Date.now()+60000,boostUntil
 claimEvent();
 assert.equal(state.stats.eventsCaptured,1,"Un phénomène rare doit pouvoir être capturé");
 assert.equal(state.activeEvent,null,"Un événement instantané doit disparaître après capture");
+state.pathUpgrades.push("path_storm_spark");
+assert.equal(rainPower(),4,"La voie des orages doit renforcer les averses");
+assert.equal(pathTechList().length,8,"Chaque voie doit proposer huit recherches exclusives");
+state.drops=1e20;
+buyProject("project_storm_coil");
+assert.equal(state.relics.storm,1,"Un projet doit créer une relique persistante");
+assert.equal(relicMultiplier(),1.1,"Une relique doit renforcer définitivement la production");
 `;
 
 vm.runInNewContext(`${definitions}\n${checks}`, {...context,assert});

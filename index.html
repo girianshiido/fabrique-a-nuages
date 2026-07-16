@@ -7,7 +7,7 @@
   <meta name="description" content="La Fabrique à Nuages, un jeu incrémental météorologique.">
   <title>La Fabrique à Nuages</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body data-sky="0">
   <div class="world" aria-hidden="true">
@@ -75,9 +75,10 @@
       </aside>
 
       <section class="management-panel">
-        <nav class="tabs" aria-label="Gestion de la fabrique">
+        <nav class="tabs tabs-four" aria-label="Gestion de la fabrique">
           <button type="button" class="active" data-tab="automates"><span>⚙</span> Automates <b id="unlockedUnitsBadge">4 / 24</b></button>
           <button type="button" data-tab="upgrades"><span>✦</span> Innovations <b id="upgradeBadge">0</b></button>
+          <button type="button" data-tab="strategy"><span>✺</span> Stratégie <b id="strategyBadge">—</b></button>
           <button type="button" data-tab="records"><span>⌁</span> Archives</button>
         </nav>
 
@@ -103,6 +104,14 @@
           <div class="record-grid" id="recordGrid"></div>
           <section class="milestone-map"><div class="section-title"><h2>Ascension de la fabrique</h2><span id="eraLabel">Ère 1</span></div><div id="eraTrack" class="era-track"></div></section>
         </div>
+
+        <div class="tab-page" id="strategyPage" hidden>
+          <div class="panel-head"><div><p class="eyebrow">Choix d’ère</p><h1 id="pathHeading">Aucune voie choisie</h1></div><p class="shop-note" id="pathTagline">Une Aube débloque la première spécialisation.</p></div>
+          <section class="path-overview" id="pathOverview"></section>
+          <section class="path-section"><div class="section-title"><h2>Recherches de voie</h2><span id="pathTechCount">0 / 8</span></div><div class="path-tech-list" id="pathTechList"></div></section>
+          <section class="path-section"><div class="section-title"><h2>Projets monumentaux</h2><span>Une relique par projet</span></div><div class="project-list" id="projectList"></div></section>
+          <section class="relic-section"><span>✦ Reliques conservées</span><b id="relicCount">0</b><small id="relicDescription">+0 % de production permanente</small></section>
+        </div>
       </section>
     </div>
   </main>
@@ -111,6 +120,7 @@
     <button class="dialog-close" data-close="prestigeDialog" type="button" aria-label="Fermer">×</button>
     <div class="dawn-emblem">◈</div><p class="eyebrow">Nouveau cycle</p><h2>Déclencher l’Aube ?</h2>
     <p id="prestigeDescription"></p>
+    <div class="path-picker" id="pathPicker"></div>
     <div class="prestige-equation"><div><small>Tu perds</small><b>Gouttes, automates<br>et innovations</b></div><span>→</span><div><small>Tu conserves</small><b id="prestigeReward">+1 Aube</b></div></div>
     <p class="next-cycle" id="nextCycleInfo"></p>
     <button class="primary-button" id="confirmPrestige" type="button">Commencer le nouveau cycle</button>
@@ -134,6 +144,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="achievement" id="achievement" role="status" aria-live="polite" hidden><span>✦</span><div><small>Nouveau palier</small><b></b></div></div>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
