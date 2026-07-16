@@ -278,7 +278,7 @@ function contractTarget(template){
   if(template.metric==="units")return 3+Math.floor(tier/2);
   return Math.max(100,baseProduction()*Math.max(25,35+tier*8));
 }
-function contractDuration(template,target){return template.metric==="clicks"?Math.min(100,Math.max(30,Math.ceil(target/5))):template.time+Math.floor(state.stats.contractsCompleted/6)*15}
+function contractDuration(template,target){return template.metric==="clicks"?Math.min(100,Math.max(30,Math.ceil(target/5))):template.time}
 function makeContract(){
   const template=contractTemplates[state.stats.contractsCompleted%contractTemplates.length],target=contractTarget(template);
   const duration=contractDuration(template,target);

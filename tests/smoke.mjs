@@ -44,6 +44,7 @@ assert.equal(state.lifetime,1e9,"Le total historique doit être conservé");
 state.stats.contractsCompleted=160;
 assert.equal(contractTarget(contractTemplates[0]),500,"Les contrats de condensation doivent plafonner à 500 clics");
 assert.equal(contractDuration(contractTemplates[0],500),100,"500 clics doivent laisser 100 secondes");
+assert.equal(contractDuration(contractTemplates[1],1e30),90,"Les contrats de réserve doivent conserver leur durée normale");
 state.stats.contractsCompleted=0;
 state.contract={id:"clicks",target:2,progress:0,startedAt:0,expiresAt:Date.now()+60000};
 recordContractProgress("clicks",1);recordContractProgress("clicks",1);
