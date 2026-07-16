@@ -60,6 +60,7 @@ assert.equal(state.expedition[0],"first_drop","L’expédition doit valider ses 
 state.expedition=expeditionChapters.slice(0,7).map(chapter=>chapter.id);state.owned.fan=100;state.activeBoss=null;
 startBoss();
 assert.equal(state.activeBoss.id,"storm_boss","La première tempête-boss doit pouvoir démarrer");
+recordBossAction("clicks",25);
 recordBossProgress(state.activeBoss.target);
 assert.equal(state.expedition.includes("storm_boss"),true,"Une tempête-boss doit valider son jalon à l’objectif");
 state.stats.clicks=100;updateAchievements();

@@ -113,12 +113,14 @@ const expeditionChapters = [
   {id:"first_dawn",icon:"◈",name:"Première Aube",check:s=>s.cycles>=1},
   {id:"first_relic",icon:"✦",name:"Relique gardée",check:s=>Object.values(s.relics).reduce((a,b)=>a+b,0)>=1},
   {id:"path_mastery",icon:"✺",name:"Voie maîtrisée",check:s=>s.pathUpgrades.length>=4},
-  {id:"storm_boss",icon:"⛈️",name:"Supercellule",boss:true,goal:40},
+  {id:"storm_boss",icon:"⛈️",name:"Supercellule",boss:true,goal:40,bossType:"clicks"},
   {id:"galaxy",icon:"🌌",name:"Ciel galactique",check:s=>s.lifetime>=1e22},
-  {id:"tempest_boss",icon:"🌀",name:"Tempête parfaite",boss:true,goal:90},
+  {id:"tempest_boss",icon:"🌀",name:"Tempête parfaite",boss:true,goal:90,bossType:"rain"},
   {id:"multiverse",icon:"♾️",name:"Seuil infini",check:s=>s.lifetime>=1e30},
-  {id:"final_boss",icon:"☀️",name:"Soleil domestiqué",boss:true,goal:150}
+  {id:"final_boss",icon:"☀️",name:"Soleil domestiqué",boss:true,goal:150,bossType:"events"}
 ];
+const bossActions={clicks:{label:"clics concentrés",icon:"☝️",target:25},rain:{label:"averses déclenchées",icon:"🌧️",target:3},events:{label:"phénomènes capturés",icon:"🌈",target:2}};
+function normalizeBoss(boss){if(!boss)return null;const chapter=expeditionChapters.find(item=>item.id===boss.id),action=chapter&&bossActions[chapter.bossType];return{phase:1,actionProgress:0,actionTarget:action?.target||1,...boss};}
 const achievements = [
   ["clicker","☝️","Main de nuage",s=>s.stats.clicks>=100],["collector","💧","Collecteur",s=>s.lifetime>=1e6],["builder","🏗️","Bâtisseur",s=>s.stats.unitsBought>=100],["researcher","🔬","Chercheur",s=>s.stats.upgradesBought>=20],["contractor","📜","Contractuel",s=>s.stats.contractsCompleted>=10],["chaser","🌈","Chasseur",s=>s.stats.eventsCaptured>=10],["dawn","◈","Aurore",s=>s.cycles>=3],["relic","✦","Conservateur",s=>Object.values(s.relics).reduce((a,b)=>a+b,0)>=3],["storm","⛈️","Orageux",s=>s.currentPath==="storm"],["engineer","⚙️","Industrieux",s=>s.currentPath==="engineer"],["chrono","⌛","Hors du temps",s=>s.currentPath==="chrono"],["infinite","♾️","Infini",s=>s.newGamePlus>=1]
 ].map(([id,icon,name,check])=>({id,icon,name,check}));
@@ -159,7 +161,7 @@ function load(){
     const migratedUpgrades=[...new Set((saved.upgrades||[]).map(id=>legacyMap[id]||id).filter(id=>globalUpgrades.some(u=>u.id===id)||/^unit_[a-z]+_\d+$/.test(id)))];
     const cycles=Number(saved.cycles)||0;
     const buyModes=["1","10","100","max"];
-    return {...fresh,...saved,runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:{...fresh.stats,...saved.stats},cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[],currentPath:paths.some(path=>path.id===saved.currentPath)?saved.currentPath:null,pendingPath:null,pathUpgrades:Array.isArray(saved.pathUpgrades)?saved.pathUpgrades:[],projects:Array.isArray(saved.projects)?saved.projects:[],relics:{...fresh.relics,...saved.relics},expedition:Array.isArray(saved.expedition)?saved.expedition:[],activeBoss:saved.activeBoss||null,unlockedAchievements:Array.isArray(saved.unlockedAchievements)?saved.unlockedAchievements:[],newGamePlus:Number(saved.newGamePlus)||0,settings:{...fresh.settings,...saved.settings},buyMode:buyModes.includes(saved.buyMode)?saved.buyMode:fresh.buyMode};
+    return {...fresh,...saved,runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:{...fresh.stats,...saved.stats},cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[],currentPath:paths.some(path=>path.id===saved.currentPath)?saved.currentPath:null,pendingPath:null,pathUpgrades:Array.isArray(saved.pathUpgrades)?saved.pathUpgrades:[],projects:Array.isArray(saved.projects)?saved.projects:[],relics:{...fresh.relics,...saved.relics},expedition:Array.isArray(saved.expedition)?saved.expedition:[],activeBoss:normalizeBoss(saved.activeBoss),unlockedAchievements:Array.isArray(saved.unlockedAchievements)?saved.unlockedAchievements:[],newGamePlus:Number(saved.newGamePlus)||0,settings:{...fresh.settings,...saved.settings},buyMode:buyModes.includes(saved.buyMode)?saved.buyMode:fresh.buyMode};
   }catch{return initialState()}
 }
 function now(){return Date.now()+clockOffset}
@@ -220,7 +222,8 @@ function baseProduction(s=state){
   const production=units.reduce((sum,u)=>sum+(s.owned[u.id]||0)*u.production*unitMultiplier(u,s),0);
   return production*allMultiplier()*permanentMultiplier()*contractMultiplier();
 }
-function production(){return baseProduction()*rainMultiplier()*eventMultiplier("production")}
+function bossProductionMultiplier(){const boss=state.activeBoss;return !boss||boss.phase===1?1:boss.phase===2?.8:.6}
+function production(){return baseProduction()*rainMultiplier()*eventMultiplier("production")*bossProductionMultiplier()}
 function clickValue(){
   const ppsBonus=globalEffect("clickPps",0,(a,b)=>a+b)*baseProduction();
   return (1*clickMultiplier()*permanentMultiplier()+ppsBonus)*rainMultiplier()*eventMultiplier("click");
@@ -277,7 +280,8 @@ function contractTarget(template){
 }
 function makeContract(){
   const template=contractTemplates[state.stats.contractsCompleted%contractTemplates.length],target=contractTarget(template);
-  state.contract={id:template.id,target,progress:0,startedAt:now(),expiresAt:now()+template.time*1000};state.nextContractAt=0;
+  const duration=template.metric==="clicks"?Math.max(template.time,target*3.5):template.time+Math.floor(state.stats.contractsCompleted/6)*15;
+  state.contract={id:template.id,target,progress:0,startedAt:now(),expiresAt:now()+duration*1000};state.nextContractAt=0;
   toast(`Nouveau contrat : ${template.name}`);render(true);save();
 }
 function recordContractProgress(metric,amount){
@@ -306,7 +310,7 @@ function claimEvent(){
   if(event.kind==="instant"){addDrops(baseProduction()*event.value*power);state.activeEvent=null}
   else if(event.kind==="contract"){if(state.contract){state.contract.progress=Math.min(state.contract.target,state.contract.progress+state.contract.target*event.value*power);if(state.contract.progress>=state.contract.target)completeContract()}state.activeEvent=null}
   else current.boostUntil=now()+event.duration*1000;
-  state.stats.eventsCaptured++;achievement(`${event.name} capturé !`);playTone(780,.17);render(true);save();
+  state.stats.eventsCaptured++;recordBossAction("events");achievement(`${event.name} capturé !`);playTone(780,.17);render(true);save();
 }
 function updateEvents(){
   const current=state.activeEvent;
@@ -324,11 +328,13 @@ function updateExpedition(){
   if(boss&&boss.expiresAt<=now()){state.activeBoss=null;toast("La tempête-boss s’est dissipée. Prépare une nouvelle tentative.");save()}
 }
 function startBoss(){
-  const chapter=nextChapter();if(!chapter?.boss||state.activeBoss)return;const target=Math.max(1000,baseProduction()*chapter.goal);state.activeBoss={id:chapter.id,target,progress:0,expiresAt:now()+90000};toast(`Tempête-boss : ${chapter.name} !`);playTone(520,.2);render(true);save();
+  const chapter=nextChapter();if(!chapter?.boss||state.activeBoss)return;const action=bossActions[chapter.bossType],target=Math.max(1000,baseProduction()*chapter.goal);state.activeBoss={id:chapter.id,target,progress:0,phase:1,actionProgress:0,actionTarget:action.target,expiresAt:now()+90000};toast(`Tempête-boss : ${chapter.name} ! ${action.icon} ${action.target} ${action.label}.`);playTone(520,.2);render(true);save();
 }
 function recordBossProgress(amount){
-  const boss=state.activeBoss;if(!boss||amount<=0)return;boss.progress=Math.min(boss.target,boss.progress+amount);if(boss.progress>=boss.target){const chapter=expeditionChapters.find(item=>item.id===boss.id);state.activeBoss=null;completeChapter(chapter);addDrops(Math.max(500,baseProduction()*60));}
+  const boss=state.activeBoss;if(!boss||amount<=0)return;boss.progress=Math.min(boss.target,boss.progress+amount);const phase=boss.progress/boss.target>=.75?3:boss.progress/boss.target>=.4?2:1;if(phase>boss.phase){boss.phase=phase;toast(`Phase ${phase} : la tempête se renforce !`);playTone(440+phase*90,.12)};tryCompleteBoss();
 }
+function recordBossAction(kind,amount=1){const boss=state.activeBoss,chapter=boss&&expeditionChapters.find(item=>item.id===boss.id);if(!boss||!chapter||chapter.bossType!==kind)return;boss.actionProgress=Math.min(boss.actionTarget,boss.actionProgress+amount);tryCompleteBoss()}
+function tryCompleteBoss(){const boss=state.activeBoss;if(!boss||boss.progress<boss.target||boss.actionProgress<boss.actionTarget)return;const chapter=expeditionChapters.find(item=>item.id===boss.id);state.activeBoss=null;completeChapter(chapter);addDrops(Math.max(500,baseProduction()*60));toast(`${chapter.name} vaincue !`);}
 function finalCost(){return 1e32*Math.pow(10,state.newGamePlus)}
 function canBuildFinal(){return state.expedition.length===expeditionChapters.length&&!state.finalBuilt&&state.drops>=finalCost()}
 function buildFinal(){if(!canBuildFinal())return;state.drops-=finalCost();state.finalBuilt=true;els.newGamePlusLevel.textContent=state.newGamePlus+1;els.finale.showModal();achievement("Climatologue du Multivers construit");save();}
@@ -344,10 +350,10 @@ function eventDisplay(){
 }
 
 function pressCloud(event){
-  if(!initialized)return;const gain=clickValue();addDrops(gain);state.stats.clicks++;recordContractProgress("clicks",1);
+  if(!initialized)return;const gain=clickValue();addDrops(gain);state.stats.clicks++;recordContractProgress("clicks",1);recordBossAction("clicks");
   if(!isRaining()){
     state.pressure++;
-    if(state.pressure>=pressureMax()){state.pressure=0;state.rainUntil=now()+rainDuration()*1000;toast(`Averse déclenchée : production ×${rainPower()} !`);playTone(650,.2);rainSplash()}
+    if(state.pressure>=pressureMax()){state.pressure=0;state.rainUntil=now()+rainDuration()*1000;recordBossAction("rain");toast(`Averse déclenchée : production ×${rainPower()} !`);playTone(650,.2);rainSplash()}
   }
   els.cloud.classList.add("pressed");setTimeout(()=>els.cloud.classList.remove("pressed"),90);floatNumber(event.clientX||innerWidth/2,event.clientY||innerHeight/2,`+${format(gain)}`);playTone(185+state.pressure*7,.025);render();
 }
@@ -419,7 +425,7 @@ function renderStrategy(){
 function renderExpedition(){
   const complete=state.expedition.length,chapter=nextChapter();els.expeditionProgress.textContent=`${complete} / ${expeditionChapters.length}`;els.expeditionTrack.innerHTML=expeditionChapters.map(item=>`<div class="expedition-node ${state.expedition.includes(item.id)?"done":""} ${chapter?.id===item.id?"active":""}"><b>${state.expedition.includes(item.id)?"✓":item.icon}</b><small>${item.name}</small></div>`).join("");
   if(!chapter){els.bossCard.innerHTML=`<strong>✦ Expédition terminée</strong><p>Le Climatologue du Multivers peut maintenant être construit.</p>`}
-  else if(chapter.boss){const boss=state.activeBoss;if(boss){els.bossCard.innerHTML=`<strong>${chapter.icon} Tempête-boss : ${chapter.name}</strong><p>${format(boss.progress)} / ${format(boss.target)} gouttes · ${Math.max(0,(boss.expiresAt-now())/1000).toFixed(0)} s</p><small>Multiplie la production et capture les phénomènes rares.</small>`}else els.bossCard.innerHTML=`<strong>${chapter.icon} Tempête-boss : ${chapter.name}</strong><p>Produis une réserve concentrée avant que la tempête ne se disperse.</p><button type="button" data-start-boss="${chapter.id}">Affronter la tempête</button>`}
+  else if(chapter.boss){const boss=state.activeBoss,action=bossActions[chapter.bossType];if(boss){const phase=boss.phase||1,phaseHint=phase===1?"La tempête observe tes réserves.":phase===2?"Le front se resserre : la production automatique est réduite à 80 %.":"Œil du cyclone : la production automatique est réduite à 60 %.";els.bossCard.innerHTML=`<strong>${chapter.icon} ${chapter.name} · phase ${phase}/3</strong><p>${format(boss.progress)} / ${format(boss.target)} gouttes · ${Math.max(0,(boss.expiresAt-now())/1000).toFixed(0)} s</p><p>${action.icon} ${format(boss.actionProgress||0)} / ${action.target} ${action.label}</p><small>${phaseHint}</small>`}else els.bossCard.innerHTML=`<strong>${chapter.icon} Tempête-boss : ${chapter.name}</strong><p>Réserve : ${format(Math.max(1000,baseProduction()*chapter.goal))} gouttes · 90 s. Il faudra aussi ${action.target} ${action.label}.</p><button type="button" data-start-boss="${chapter.id}">Affronter la tempête</button>`}
   else els.bossCard.innerHTML=`<strong>Prochain jalon : ${chapter.name}</strong><p>Continue à développer la fabrique pour progresser dans l’Expédition.</p>`;
   if(state.finalBuilt)els.finalProject.innerHTML=`<strong>☀️ Climatologue du Multivers construit</strong><p>Le multivers est stabilisé. Nouvelle Météo+ est disponible dans la conclusion.</p>`;
   else if(!chapter){const cost=finalCost();els.finalProject.innerHTML=`<strong>☀️ Climatologue du Multivers</strong><p>La construction finale de cette météo.</p><button type="button" data-build-final ${state.drops<cost?"disabled":""}>Construire · ${format(cost)} ◆</button>`}else els.finalProject.innerHTML="";

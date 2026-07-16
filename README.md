@@ -26,6 +26,7 @@ Le jeu inclut :
 - huit recherches exclusives et trois projets monumentaux par voie ;
 - des reliques de projet conservées entre les cycles.
 - une Expédition du Multivers en 12 jalons, avec trois tempêtes-boss à vaincre ;
+- des boss en trois phases, avec réserve de gouttes et objectif d’action spécifique ;
 - le Climatologue du Multivers, une construction de conclusion ;
 - un mode Nouvelle Météo+ qui relance une campagne avec un bonus permanent supplémentaire ;
 - 12 succès à collectionner ;
