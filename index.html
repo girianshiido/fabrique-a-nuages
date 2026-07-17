@@ -12,7 +12,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=19">
+    <link rel="stylesheet" href="styles.css?v=20">
 </head>
 <body data-sky="0">
   <div class="world" aria-hidden="true">
@@ -63,6 +63,14 @@
           <div class="pressure-bar" role="progressbar" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><i id="pressureFill"></i><em></em></div>
           <small id="pressureHint">À 20 : averse ×2 pendant 15 secondes</small>
         </div>
+        <section class="venus-systems" id="venusSystems" hidden>
+          <div class="venus-system-head"><span><small>Système vénusien</small><strong>Surcadence ×25</strong></span><button id="overdriveButton" type="button">Activer</button></div>
+          <div class="corrosion-copy"><span>Corrosion</span><b id="corrosionLabel">0 %</b></div>
+          <div class="corrosion-bar"><i id="corrosionFill"></i></div>
+          <small id="overdriveHint">Produit 25× plus vite, mais la corrosion monte rapidement.</small>
+          <div class="venus-construction-head"><span>Grands chantiers</span><b id="venusConstructionProgress">0 / 4</b></div>
+          <div class="venus-construction-list" id="venusConstructionList"></div>
+        </section>
         <div class="stats">
           <div><span>Cette ère</span><b id="runDrops">0</b></div>
           <div><span>Depuis l’origine</span><b id="lifetimeDrops">0</b></div>
@@ -161,6 +169,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="achievement" id="achievement" role="status" aria-live="polite" hidden><span>✦</span><div><small>Nouveau palier</small><b></b></div></div>
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=20"></script>
 </body>
 </html>
