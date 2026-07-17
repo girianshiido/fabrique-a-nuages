@@ -4,7 +4,7 @@ const SAVE_KEY = "fabrique-nuages-save-v2";
 const LEGACY_SAVE_KEY = "fabrique-nuages-save-v1";
 const TIME_API = "https://gettimeapi.dev/v1/time?timezone=UTC";
 const COST_GROWTH = 1.15;
-const ECONOMY_VERSION = 3;
+const ECONOMY_VERSION = 4;
 const BOSS_DURATION = 90;
 const BOSS_ACTION_BUFFER = 15;
 const EARTH_MILESTONES = [1,5,10,25,50,75,100,150,200,300,400,500,750,1000,1500,2500];
@@ -183,12 +183,12 @@ const earthExpeditionChapters = [
 ];
 const marsExpeditionChapters = [
   {id:"mars_grain",icon:"🔻",name:"Premier million rouge",check:s=>s.planetTotal>=1e6},
-  {id:"mars_workshop",icon:"🚜",name:"Avant-poste autonome",check:s=>s.stats.unitsBought>=50},
+  {id:"mars_workshop",icon:"🚜",name:"Avant-poste autonome",check:s=>s.marsUnitsBuilt>=50},
   {id:"mars_research",icon:"🧪",name:"Science du régolite",check:s=>s.stats.upgradesBought>=20},
   {id:"mars_dawn",icon:"🌅",name:"Premier sol accompli",check:s=>s.cycles>=1},
   {id:"mars_boss_dust",icon:"🌪️",name:"Mur de poussière",boss:true,goal:75,bossType:"clicks"},
   {id:"mars_orbit",icon:"🌑",name:"Phobos asservie",check:s=>s.planetTotal>=1e22},
-  {id:"mars_colony",icon:"🏙️",name:"Cent mille machines",check:s=>Object.values(s.owned).reduce((a,b)=>a+b,0)>=1e5},
+  {id:"mars_colony",icon:"🏙️",name:"Cent mille machines",check:s=>s.marsUnitsBuilt>=1e5},
   {id:"mars_relic",icon:"🔶",name:"Relique d’Arès",check:s=>Object.values(s.relics).reduce((a,b)=>a+b,0)>=2},
   {id:"mars_terraform",icon:"🌱",name:"Atmosphère naissante",check:s=>s.planetTotal>=1e42},
   {id:"mars_boss_phobos",icon:"🌑",name:"Révolte de Phobos",boss:true,goal:180,bossType:"rain"},
@@ -208,7 +208,7 @@ const achievements = [
 function configurePlanet(planet){const mars=planet==="mars";units=mars?marsUnits:earthUnits;MILESTONES=mars?MARS_MILESTONES:EARTH_MILESTONES;MILESTONE_NAMES=mars?MARS_MILESTONE_NAMES:EARTH_MILESTONE_NAMES;expeditionChapters=mars?marsExpeditionChapters:earthExpeditionChapters}
 const initialOwned = (planet="earth") => Object.fromEntries((planet==="mars"?marsUnits:earthUnits).map(u=>[u.id,0]));
 const initialState = (planet="earth") => ({
-  planet,marsUnlocked:planet==="mars",earthLegacy:null,economyVersion:ECONOMY_VERSION,drops:0,runTotal:0,planetTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(planet),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],currentPath:null,pendingPath:null,pathUpgrades:[],projects:[],relics:{storm:0,engineer:0,chrono:0},expedition:[],activeBoss:null,finalBuilt:false,unlockedAchievements:[],newGamePlus:0,settings:{effects:true},
+  planet,marsUnlocked:planet==="mars",earthLegacy:null,economyVersion:ECONOMY_VERSION,marsUnitsBuilt:0,drops:0,runTotal:0,planetTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(planet),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],currentPath:null,pendingPath:null,pathUpgrades:[],projects:[],relics:{storm:0,engineer:0,chrono:0},expedition:[],activeBoss:null,finalBuilt:false,unlockedAchievements:[],newGamePlus:0,settings:{effects:true},
   activeEvent:null,nextEventAt:Date.now()+60000,contract:null,nextContractAt:Date.now()+6000,
   buyMode:"1",sound:true,startedAt:Date.now(),runStartedAt:Date.now(),lastTick:Date.now(),savedAt:Date.now(),
   stats:{clicks:0,unitsBought:0,upgradesBought:0,bestPps:0,offlineEarned:0,contractsCompleted:0,contractsFailed:0,eventsCaptured:0}
@@ -243,7 +243,8 @@ function load(){
     const migratedUpgrades=[...new Set((saved.upgrades||[]).map(id=>legacyMap[id]||id).filter(id=>globalUpgrades.some(u=>u.id===id)||/^unit_[a-z]+_\d+$/.test(id)))];
     const cycles=Number(saved.cycles)||0;
     const buyModes=["1","10","100","max"];
-    return {...fresh,...saved,planet,economyVersion:Number(saved.economyVersion)||1,planetTotal:saved.planetTotal??(planet==="earth"?(saved.lifetime??legacyTotal):saved.runTotal??0),runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:{...fresh.stats,...saved.stats},cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[],currentPath:paths.some(path=>path.id===saved.currentPath)?saved.currentPath:null,pendingPath:null,pathUpgrades:Array.isArray(saved.pathUpgrades)?saved.pathUpgrades:[],projects:Array.isArray(saved.projects)?saved.projects:[],relics:{...fresh.relics,...saved.relics},expedition:Array.isArray(saved.expedition)?saved.expedition:[],activeBoss:normalizeBoss(saved.activeBoss),unlockedAchievements:Array.isArray(saved.unlockedAchievements)?saved.unlockedAchievements:[],newGamePlus:Number(saved.newGamePlus)||0,settings:{...fresh.settings,...saved.settings},buyMode:buyModes.includes(saved.buyMode)?saved.buyMode:fresh.buyMode};
+    const legacyMarsUnits=planet==="mars"?Object.values({...fresh.owned,...saved.owned}).reduce((sum,count)=>sum+(Number(count)||0),0):0;
+    return {...fresh,...saved,planet,economyVersion:Number(saved.economyVersion)||1,marsUnitsBuilt:Number(saved.marsUnitsBuilt)||legacyMarsUnits,planetTotal:saved.planetTotal??(planet==="earth"?(saved.lifetime??legacyTotal):saved.runTotal??0),runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:{...fresh.stats,...saved.stats},cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[],currentPath:paths.some(path=>path.id===saved.currentPath)?saved.currentPath:null,pendingPath:null,pathUpgrades:Array.isArray(saved.pathUpgrades)?saved.pathUpgrades:[],projects:Array.isArray(saved.projects)?saved.projects:[],relics:{...fresh.relics,...saved.relics},expedition:Array.isArray(saved.expedition)?saved.expedition:[],activeBoss:normalizeBoss(saved.activeBoss),unlockedAchievements:Array.isArray(saved.unlockedAchievements)?saved.unlockedAchievements:[],newGamePlus:Number(saved.newGamePlus)||0,settings:{...fresh.settings,...saved.settings},buyMode:buyModes.includes(saved.buyMode)?saved.buyMode:fresh.buyMode};
   }catch{return initialState()}
 }
 function now(){return Date.now()+clockOffset}
@@ -285,7 +286,7 @@ function newGamePlusMultiplier(){return 1+state.newGamePlus*.5}
 function isMars(){return state.planet==="mars"}
 function resourceName(){return isMars()?"grains":"gouttes"}
 function globalEffect(type,base,combine=(a,b)=>a*b){return globalUpgrades.filter(u=>u.type===type&&hasUpgrade(u.id)).reduce((value,u)=>combine(value,u.value),base)}
-function permanentMultiplier(){return (1+state.cycles*.25)*dawnEffect("all",1)*relicMultiplier()*achievementMultiplier()*newGamePlusMultiplier()}
+function permanentMultiplier(){return Math.pow(1.35,state.cycles)*dawnEffect("all",1)*relicMultiplier()*achievementMultiplier()*newGamePlusMultiplier()}
 function contractMultiplier(){return 1+state.stats.contractsCompleted*(hasDawn("wide_horizon")?.04:.02)*pathEffect("contractBonus",1,(a,b)=>a*b)}
 function allMultiplier(){return globalEffect("all",1)*pathEffect("all",1)*projectEffect("all",1)}
 function clickMultiplier(){return globalEffect("click",1)*dawnEffect("click",1)*pathEffect("click",1)}
@@ -347,7 +348,7 @@ function maxAffordable(unit){
 function purchaseQuote(unit){if(state.buyMode==="max")return maxAffordable(unit);const count=Number(state.buyMode);return{count,cost:unitCost(unit,count)}}
 function buyUnit(id,event){
   if(!initialized)return;const unit=units.find(u=>u.id===id),quote=purchaseQuote(unit);
-  if(!quote.count||state.drops<quote.cost)return;const before=state.owned[id];state.drops-=quote.cost;state.owned[id]+=quote.count;state.stats.unitsBought+=quote.count;
+  if(!quote.count||state.drops<quote.cost)return;const before=state.owned[id];state.drops-=quote.cost;state.owned[id]+=quote.count;state.stats.unitsBought+=quote.count;if(isMars())state.marsUnitsBuilt+=quote.count;
   checkCrossedMilestones(unit,before,state.owned[id]);recordContractProgress("units",quote.count);playTone(275+unit.index*9,.055);burst(event);render(true);save();
 }
 function milestoneUpgrade(unit,index){
@@ -375,7 +376,7 @@ function buyUpgrade(id,event){
   state.drops-=upgrade.cost;state.upgrades.push(id);state.stats.upgradesBought++;playTone(520,.13);burst(event,true);toast(`${upgrade.name} installée !`);render(true);save();
 }
 function buyAllAvailableUpgrades(event){
-  if(!initialized)return;
+  if(!initialized||state.cycles<2)return;
   let bought=0;
   while(true){
     const upgrade=availableUpgrades().find(item=>state.drops>=item.cost);
@@ -467,7 +468,8 @@ function recordBossProgress(amount){
 function recordBossAction(kind,amount=1){const boss=state.activeBoss,chapter=boss&&expeditionChapters.find(item=>item.id===boss.id);if(!boss||!chapter||chapter.bossType!==kind)return;boss.actionProgress=Math.min(boss.actionTarget,boss.actionProgress+amount);tryCompleteBoss()}
 function tryCompleteBoss(){const boss=state.activeBoss;if(!boss||boss.progress<boss.target||boss.actionProgress<boss.actionTarget)return;const chapter=expeditionChapters.find(item=>item.id===boss.id);state.activeBoss=null;completeChapter(chapter);addDrops(Math.max(500,baseProduction()*60));toast(`${chapter.name} vaincue !`);}
 function finalCost(){return (isMars()?1e78:1e32)*Math.pow(isMars()?100:10,state.newGamePlus)}
-function canBuildFinal(){return state.expedition.length===expeditionChapters.length&&!state.finalBuilt&&state.drops>=finalCost()}
+function finaleMastery(){const requiredCycles=isMars()?4:3,requiredNodes=isMars()?4:3;return{requiredCycles,requiredNodes,ready:state.cycles>=requiredCycles&&state.dawnUpgrades.length>=requiredNodes}}
+function canBuildFinal(){return state.expedition.length===expeditionChapters.length&&!state.finalBuilt&&finaleMastery().ready&&state.drops>=finalCost()}
 function prepareFinale(){
   if(isMars()){$("#finaleEyebrow").textContent="Mars respire";$("#finaleTitle").textContent="Le Cœur de Mars s’est éveillé.";$("#finaleText").textContent="Après des ères de poussière, des océans apparaissent sous les deux lunes. La planète rouge est devenue un monde vivant.";$("#finaleReward").childNodes[0].textContent="Nouvelle Mars+ ";$("#newGamePlusButton").textContent="Recommencer au-delà de Mars";}
   else{$("#finaleEyebrow").textContent="Transmission inconnue";$("#finaleTitle").textContent="Le Climatologue vient de détecter… autre chose.";$("#finaleText").textContent="Le signal ne provient d’aucun ciel terrestre. Deux petites lunes apparaissent sur l’écran, puis une coordonnée : 18.4° N, 77.5° E.";$("#finaleReward").childNodes[0].textContent="Destination verrouillée ";$("#newGamePlusButton").textContent="Déchiffrer le signal";}
@@ -499,18 +501,19 @@ function pressCloud(event){
 }
 
 function prestigeRequirement(cycles=state.cycles){return (isMars()?1e12:1e9)*Math.pow(isMars()?1e6:1000,cycles)}
+function prestigeReward(){const ratio=Math.max(1,state.runTotal/prestigeRequirement()),step=isMars()?6:3;return 1+Math.min(3,Math.floor(Math.log10(ratio)/step))}
 function canPrestige(){return state.runTotal>=prestigeRequirement()}
 function openPrestige(){
   const requirement=prestigeRequirement(),ready=canPrestige();
   state.pendingPath=state.currentPath||null;renderPathPicker();
-  const cycleName=isMars()?"Sol":"Aube";els.prestigeDescription.textContent=ready?`Cette ère a produit ${format(state.runTotal)} ${resourceName()}. Un nouveau ${cycleName} sera disponible, et ta prochaine voie définira le rythme du cycle.`:`Il faut produire ${format(requirement)} ${resourceName()} dans cette ère avant de pouvoir recommencer.`;
-  els.prestigeReward.textContent=ready?`+1 ${cycleName} · bonus de cycle +25 %`:`${cycleName} non disponible`;
+  const cycleName=isMars()?"Sol":"Aube",reward=prestigeReward();els.prestigeDescription.textContent=ready?`Cette ère a produit ${format(state.runTotal)} ${resourceName()}. Un nouveau ${cycleName} sera disponible, et ta prochaine voie définira le rythme du cycle.`:`Il faut produire ${format(requirement)} ${resourceName()} dans cette ère avant de pouvoir recommencer.`;
+  els.prestigeReward.textContent=ready?`+${reward} ${cycleName}${reward>1?"s":""} · bonus permanent ×1,35`:`${cycleName} non disponible`;
   els.nextCycleInfo.textContent=`Choisis une voie pour la prochaine ère. Les recherches et projets de voie repartiront à zéro, mais les reliques resteront.`;
   $("#confirmPrestige").disabled=!ready||!state.pendingPath;els.prestige.showModal();
 }
 function prestige(){
-  if(!canPrestige()||!state.pendingPath)return;const planet=state.planet,kept={planet,marsUnlocked:state.marsUnlocked,earthLegacy:state.earthLegacy,cycles:state.cycles+1,dawns:state.dawns+1,dawnSpent:state.dawnSpent,dawnUpgrades:state.dawnUpgrades,currentPath:state.pendingPath,relics:state.relics,lifetime:state.lifetime,planetTotal:state.planetTotal,startedAt:state.startedAt,sound:state.sound,stats:state.stats,buyMode:state.buyMode,newGamePlus:state.newGamePlus,unlockedAchievements:state.unlockedAchievements,settings:state.settings};
-  configurePlanet(planet);state={...initialState(planet),...kept};const starter=dawnEffect("start",0,(a,b)=>a+b)*state.cycles;state.drops=starter;state.runTotal=starter;state.planetTotal+=starter;state.lifetime+=starter;initialized=true;els.prestige.close();const cycleName=isMars()?"Sol":"Aube";achievement(`${cycleName} ${state.cycles} reçu — ${format(dawnBalance())} disponible${dawnBalance()>1?"s":""}`);render(true);save();
+  if(!canPrestige()||!state.pendingPath)return;const reward=prestigeReward(),planet=state.planet,kept={planet,marsUnlocked:state.marsUnlocked,earthLegacy:state.earthLegacy,marsUnitsBuilt:state.marsUnitsBuilt,cycles:state.cycles+1,dawns:state.dawns+reward,dawnSpent:state.dawnSpent,dawnUpgrades:state.dawnUpgrades,currentPath:state.pendingPath,relics:state.relics,lifetime:state.lifetime,planetTotal:state.planetTotal,startedAt:state.startedAt,sound:state.sound,stats:state.stats,buyMode:state.buyMode,newGamePlus:state.newGamePlus,unlockedAchievements:state.unlockedAchievements,settings:state.settings};
+  configurePlanet(planet);state={...initialState(planet),...kept};const starter=dawnEffect("start",0,(a,b)=>a+b)*state.cycles;state.drops=starter;state.runTotal=starter;state.planetTotal+=starter;state.lifetime+=starter;initialized=true;els.prestige.close();const cycleName=isMars()?"Sol":"Aube";achievement(`${cycleName} ${state.cycles} reçu — +${reward} · ${format(dawnBalance())} disponible${dawnBalance()>1?"s":""}`);render(true);save();
 }
 function renderPathPicker(){
   els.pathPicker.innerHTML=paths.map(raw=>{const path=displayPath(raw);return `<button class="path-choice ${state.pendingPath===path.id?"active":""}" type="button" data-path-choice="${path.id}" style="--path-color:${path.color};--path-pale:${path.pale}"><span>${path.icon}</span><strong>${path.name}</strong><small>${path.bonus}</small></button>`}).join("");
@@ -567,9 +570,10 @@ function renderExpedition(){
   const complete=state.expedition.length,chapter=nextChapter();els.expeditionProgress.textContent=`${complete} / ${expeditionChapters.length}`;els.expeditionTrack.innerHTML=expeditionChapters.map(item=>`<div class="expedition-node ${state.expedition.includes(item.id)?"done":""} ${chapter?.id===item.id?"active":""}"><b>${state.expedition.includes(item.id)?"✓":item.icon}</b><small>${item.name}</small></div>`).join("");
   if(!chapter){els.bossCard.innerHTML=`<strong>✦ ${isMars()?"Conquête terminée":"Expédition terminée"}</strong><p>${isMars()?"Le Réacteur d’Éden peut maintenant éveiller Mars.":"Le Climatologue du Multivers peut maintenant être construit."}</p>`}
   else if(chapter.boss){const boss=state.activeBoss,action=bossActions[chapter.bossType],actionTarget=bossActionTarget(chapter.bossType);if(boss){const phase=boss.phase||1,phaseHint=phase===1?"La tempête observe tes réserves.":phase===2?"Le front se resserre : la production automatique est réduite à 80 %.":"Œil du cyclone : la production automatique est réduite à 60 %.";els.bossCard.innerHTML=`<strong>${chapter.icon} ${chapter.name} · phase ${phase}/3</strong><p>${format(boss.progress)} / ${format(boss.target)} ${resourceName()} · ${Math.max(0,(boss.expiresAt-now())/1000).toFixed(0)} s</p><p>${action.icon} ${format(boss.actionProgress||0)} / ${format(boss.actionTarget)} ${action.label}</p><small>${phaseHint}</small>`}else els.bossCard.innerHTML=`<strong>${chapter.icon} ${isMars()?"Anomalie majeure":"Tempête-boss"} : ${chapter.name}</strong><p>Réserve : ${format(Math.max(1000,baseProduction()*chapter.goal))} ${resourceName()} · ${BOSS_DURATION} s. Il faudra aussi ${actionTarget} ${action.label}.</p><button type="button" data-start-boss="${chapter.id}">Affronter ${isMars()?"l’anomalie":"la tempête"}</button>`}
+  else if(chapter.id==="mars_colony")els.bossCard.innerHTML=`<strong>Prochain jalon : ${chapter.name}</strong><p>${format(state.marsUnitsBuilt)} / 100 k machines martiennes déployées sur l’ensemble des Sols.</p>`;
   else els.bossCard.innerHTML=`<strong>Prochain jalon : ${chapter.name}</strong><p>${isMars()?"Développe la colonie pour poursuivre la conquête.":"Continue à développer la fabrique pour progresser dans l’Expédition."}</p>`;
   if(state.finalBuilt)els.finalProject.innerHTML=`<strong>${isMars()?"❤️ Cœur de Mars éveillé":"☀️ Climatologue du Multivers construit"}</strong><p>${isMars()?"La planète rouge respire enfin.":"Une transmission inconnue attend d’être déchiffrée."}</p><button type="button" data-open-finale>${isMars()?"Voir la conclusion":"Ouvrir la transmission"}</button>`;
-  else if(!chapter){const cost=finalCost();els.finalProject.innerHTML=`<strong>${isMars()?"❤️ Réacteur d’Éden martien":"☀️ Climatologue du Multivers"}</strong><p>${isMars()?"La construction ultime, enfouie sous Olympus Mons.":"La construction finale de cette météo."}</p><button type="button" data-build-final ${state.drops<cost?"disabled":""}>Construire · ${format(cost)} ◆</button>`}else els.finalProject.innerHTML="";
+  else if(!chapter){const cost=finalCost(),mastery=finaleMastery(),title=isMars()?"❤️ Réacteur d’Éden martien":"☀️ Climatologue du Multivers";if(!mastery.ready)els.finalProject.innerHTML=`<strong>${title}</strong><p>Constellation incomplète : ${state.cycles} / ${mastery.requiredCycles} ${isMars()?"Sols":"Aubes"} et ${state.dawnUpgrades.length} / ${mastery.requiredNodes} héritages inscrits.</p><button type="button" disabled>Prépare la Constellation</button>`;else els.finalProject.innerHTML=`<strong>${title}</strong><p>${isMars()?"La construction ultime, enfouie sous Olympus Mons.":"La construction finale de cette météo."}</p><button type="button" data-build-final ${state.drops<cost?"disabled":""}>Construire · ${format(cost)} ◆</button>`}else els.finalProject.innerHTML="";
 }
 function renderAchievements(){const marsNames=["Main rouge","Extracteur","Colonisateur","Protocoliste","Missionnaire","Chasseur d’anomalies","Premier Sol","Gardien d’Arès","Poussiéreux","Bâtisseur","Navigateur","Mars infinie"];els.achievementCount.textContent=`${state.unlockedAchievements.length} / ${achievements.length}`;els.achievementList.innerHTML=achievements.map((item,index)=>`<div class="achievement-chip ${state.unlockedAchievements.includes(item.id)?"done":""}"><span>${state.unlockedAchievements.includes(item.id)?item.icon:"🔒"}</span><small>${isMars()?marsNames[index]:item.name}</small></div>`).join("")}
 function renderSky(){const highest=units.reduce((max,u)=>state.owned[u.id]>0?Math.max(max,u.index):max,0),stage=Math.min(5,Math.floor(highest/4));document.body.dataset.sky=stage;document.body.dataset.path=state.currentPath||""}
@@ -587,7 +591,7 @@ function renderUnits(){
 }
 function renderUpgrades(){
   const available=availableUpgrades(),visible=available.slice(0,12);els.upgradeBadge.textContent=available.length;els.upgradeCount.textContent=state.upgrades.length;
-  els.buyAllUpgrades.disabled=!available.some(upgrade=>state.drops>=upgrade.cost);
+  els.buyAllUpgrades.hidden=state.cycles<2;els.buyAllUpgrades.disabled=state.cycles<2||!available.some(upgrade=>state.drops>=upgrade.cost);
   const upgradeName=u=>isMars()&&!u.unit?marsUpgradeNames[globalUpgrades.findIndex(item=>item.id===u.id)]||u.name:u.name;
   els.upgrades.innerHTML=visible.length?visible.map(u=>`<button class="upgrade-card" type="button" data-upgrade="${u.id}" ${state.drops<u.cost?"disabled":""} style="--upgrade-color:${u.color||"#fff0ca"}"><span class="upgrade-top"><span class="upgrade-icon">${u.icon||u.unit.icon}</span><strong>${upgradeName(u)}</strong></span><p>${u.description}</p><span class="upgrade-bottom"><small>${u.condition}</small><b>${format(u.cost)} ◆</b></span></button>`).join(""):`<div class="empty-upgrades">Aucune recherche disponible pour le moment.<br>Achète des automates et franchis de nouveaux caps.</div>`;
   els.lockedUpgrades.innerHTML=lockedUpgradeHints().map(u=>`<span class="research-hint">🔒 ${upgradeName(u)} · ${u.condition}</span>`).join("");
@@ -595,8 +599,9 @@ function renderUpgrades(){
 function renderRecords(){
   const unlocked=units.filter(isUnitUnlocked).length,completed=MILESTONES.reduce((n,_,i)=>n+units.filter(u=>hasUpgrade(unitUpgradeId(u,i))).length,0);
   const cycleName=isMars()?"Sols":"Cycles";
+  const machineRecord=isMars()?["Machines martiennes déployées",format(state.marsUnitsBuilt),"Objectif colonial : 100 k"]:["Automates achetés",format(state.stats.unitsBought),"Tous cycles"];
   const records=[
-    ["Meilleure production",`${format(state.stats.bestPps)} /s`,"Record tous cycles"],["Clics sur le nuage",format(state.stats.clicks),"Depuis l’origine"],["Automates achetés",format(state.stats.unitsBought),"Tous cycles"],
+    ["Meilleure production",`${format(state.stats.bestPps)} /s`,"Record tous cycles"],["Clics sur le nuage",format(state.stats.clicks),"Depuis l’origine"],machineRecord,
     ["Innovations installées",format(state.stats.upgradesBought),`${completed} caps d’automates`],["Contrats réussis",format(state.stats.contractsCompleted),`${state.stats.contractsFailed} expiré${state.stats.contractsFailed>1?"s":""}`],["Phénomènes capturés",format(state.stats.eventsCaptured),"Bonus météorologiques"],
     ["Gains hors ligne",format(state.stats.offlineEarned),`Limite ${offlineHours()} h`],[`${cycleName} accomplis`,format(state.cycles),`${dawnBalance()} ${isMars()?"Sol":"Aube"}${dawnBalance()>1?"s":""} disponible${dawnBalance()>1?"s":""}`],[`Prochain ${isMars()?"Sol":"cycle"}`,format(prestigeRequirement()),"Objectif de cette ère"]
   ];
@@ -618,7 +623,7 @@ function burst(event,gold=false){if(!event)return;for(let i=0;i<7;i++){const dot
 function rainSplash(){els.cloud.animate?.([{transform:"scale(1)"},{transform:"scale(1.12)"},{transform:"scale(1)"}],{duration:500})}
 function applyPlanetTheme(){
   const mars=isMars();document.body.dataset.planet=mars?"mars":"earth";document.title=mars?"La Colonie Rouge — Mars":"La Fabrique à Nuages";$("meta[name='theme-color']").content=mars?"#8f291f":"#bdeaff";
-  $("#brandMark").textContent=mars?"●":"☁";$("#brandTitle").textContent=mars?"La Colonie Rouge":"La Fabrique à Nuages";$("#brandSubtitle").textContent=mars?"L’éveil de Mars":"L’empire météo";$("#resourceName").textContent=resourceName();$("#clickActionName").textContent=mars?"Extraction manuelle":"Condensation manuelle";$("#productionEyebrow").textContent=mars?"Complexe de terraformation":"Chaîne de production";$("#automatesHeading").textContent=mars?"Automates martiens":"Automates météo";$("#milestoneTotal").textContent=units.length*MILESTONES.length;$("#expeditionHeading").textContent=mars?"Conquête de Mars":"Expédition du Multivers";
+  $("#brandMark").textContent=mars?"●":"☁";$("#brandTitle").textContent=mars?"La Colonie Rouge":"La Fabrique à Nuages";$("#brandSubtitle").textContent=mars?"L’éveil de Mars":"L’empire météo";$("#resourceName").textContent=resourceName();$("#clickActionName").textContent=mars?"Extraction manuelle":"Condensation manuelle";$("#productionEyebrow").textContent=mars?"Complexe de terraformation":"Chaîne de production";$("#automatesHeading").textContent=mars?"Automates martiens":"Automates météo";$("#upgradesHeading").textContent=mars?"Protocoles disponibles":"Innovations disponibles";$("#milestoneTotal").textContent=units.length*MILESTONES.length;$("#expeditionHeading").textContent=mars?"Conquête de Mars":"Expédition du Multivers";
   els.cloud.setAttribute("aria-label",mars?"Presser le noyau de poussière pour extraire des grains":"Presser le nuage pour récolter des gouttes");$("#dawnTreeButton").setAttribute("aria-label",mars?"Ouvrir l’arbre des Sols":"Ouvrir l’arbre des Aubes");$("#dawnTreeButton").querySelector("small").textContent=mars?"Sols disponibles":"Aubes disponibles";$("#prestigeButton").querySelector("small").textContent=mars?"Cycle du Sol":"Cycle de l’Aube";$(".contract-top span").textContent=mars?"☷ Mission coloniale":"☷ Contrat météo";$(".pressure-copy span").textContent=mars?"Charge électrostatique":"Pression atmosphérique";
   const tabButtons=$$(".tabs button");if(tabButtons[0])tabButtons[0].childNodes[1].textContent=mars?" Machines ":" Automates ";if(tabButtons[1])tabButtons[1].childNodes[1].textContent=mars?" Protocoles ":" Innovations ";if(tabButtons[2])tabButtons[2].childNodes[1].textContent=mars?" Doctrine ":" Stratégie ";if(tabButtons[3])tabButtons[3].childNodes[1].textContent=mars?" Mémoire ":" Archives";
   const strategyPage=$("#strategyPage");strategyPage.querySelector(".panel-head .eyebrow").textContent=mars?"Doctrine de colonie":"Choix d’ère";const sectionHeadings=$$("#strategyPage .path-section h2");if(sectionHeadings[0])sectionHeadings[0].textContent=mars?"Protocoles de doctrine":"Recherches de voie";if(sectionHeadings[1])sectionHeadings[1].textContent=mars?"Mégastructures":"Projets monumentaux";$(".relic-section span").textContent=mars?"🔶 Artéfacts conservés":"✦ Reliques conservées";$("#recordsPage .eyebrow").textContent=mars?"Mémoire centrale":"Observatoire";$("#recordsPage h1").textContent=mars?"Archives martiennes":"Archives célestes";
