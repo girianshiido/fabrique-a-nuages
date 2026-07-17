@@ -4,7 +4,8 @@ const SAVE_KEY = "fabrique-nuages-save-v2";
 const LEGACY_SAVE_KEY = "fabrique-nuages-save-v1";
 const TIME_API = "https://gettimeapi.dev/v1/time?timezone=UTC";
 const COST_GROWTH = 1.15;
-const ECONOMY_VERSION = 4;
+const ECONOMY_VERSION = 5;
+const COLOSSUS_CAP_TAX = 850;
 const BOSS_DURATION = 90;
 const BOSS_ACTION_BUFFER = 15;
 const EARTH_MILESTONES = [1,5,10,25,50,75,100,150,200,300,400,500,750,1000,1500,2500];
@@ -75,9 +76,9 @@ const marsUnits = [
   ["quantum_oasis","Oasis quantique","🏝️",2.2e40,5e33,"Irrigue plusieurs Mars à la fois","decade",1.31],
   ["red_singularity","Singularité rouge","🔴",1.2e43,1e36,"Compacte une planète jumelle","pioneer",1.3],
   ["cosmic_greenhouse","Serre cosmique","🪐",8e45,2.5e38,"Fait pousser des systèmes solaires","volatile",1.32],
-  ["ares_colossus","Colosse d’Arès","🗿",1e50,1e42,"Très rare, chaque cap vaut mille mondes","colossus",1.38],
-  ["universe_reactor","Réacteur d’univers","♾️",1e56,1e47,"Alimente toutes les colonies possibles","colossus",1.4],
-  ["mars_heart","Cœur de Mars","❤️",1e63,1e53,"Réveille enfin la planète entière","colossus",1.42]
+  ["ares_colossus","Colosse d’Arès","🗿",1e52,1e43,"Très rare : chaque cap vaut mille mondes, et réclame une nouvelle ère de ressources","colossus",1.4],
+  ["universe_reactor","Réacteur d’univers","♾️",1e60,1e51,"Alimente toutes les colonies possibles","colossus",1.42],
+  ["mars_heart","Cœur de Mars","❤️",1e70,1e61,"Réveille enfin la planète entière","colossus",1.45]
 ].map(([id,name,icon,baseCost,production,description,pattern,growth],index)=>({id,name,icon,baseCost,production,description,powers:marsPowerPatterns[pattern],growth,index}));
 let units=earthUnits;
 
@@ -190,11 +191,11 @@ const marsExpeditionChapters = [
   {id:"mars_orbit",icon:"🌑",name:"Phobos asservie",check:s=>s.planetTotal>=1e22},
   {id:"mars_colony",icon:"🏙️",name:"Cent mille machines",check:s=>s.marsUnitsBuilt>=1e5},
   {id:"mars_relic",icon:"🔶",name:"Relique d’Arès",check:s=>Object.values(s.relics).reduce((a,b)=>a+b,0)>=2},
-  {id:"mars_terraform",icon:"🌱",name:"Atmosphère naissante",check:s=>s.planetTotal>=1e42},
+  {id:"mars_terraform",icon:"🌱",name:"Atmosphère naissante",check:s=>s.planetTotal>=1e48},
   {id:"mars_boss_phobos",icon:"🌑",name:"Révolte de Phobos",boss:true,goal:180,bossType:"rain"},
   {id:"mars_colossus",icon:"🗿",name:"Colosse éveillé",check:s=>(s.owned.ares_colossus||0)>=1},
   {id:"mars_500",icon:"7️⃣",name:"Secret du cinq-centième",check:s=>(s.owned.dust_scoop||0)>=500},
-  {id:"mars_engine",icon:"⚙️",name:"Orbite déplacée",check:s=>s.planetTotal>=1e62},
+  {id:"mars_engine",icon:"⚙️",name:"Orbite déplacée",check:s=>s.planetTotal>=1e78},
   {id:"mars_heart",icon:"❤️",name:"Cœur localisé",check:s=>(s.owned.mars_heart||0)>=1},
   {id:"mars_boss_core",icon:"🔴",name:"Conscience martienne",boss:true,goal:420,bossType:"events"}
 ];
@@ -319,7 +320,13 @@ function marsResonanceMultiplier(unit,s=state){
   const phase=marsResonancePhase(),selected=phase===0?unit.index<5:phase===1?unit.index>=5&&unit.index<15:unit.index>=15;
   const current=rawUnitProduction(unit,s);if(!selected||current<=0)return 1;
   const strongest=units.reduce((max,item)=>Math.max(max,rawUnitProduction(item,s)),0);
-  return 1+strongest*2/current;
+  const activeInBand=units.filter(item=>{
+    const inBand=phase===0?item.index<5:phase===1?item.index>=5&&item.index<15:item.index>=15;
+    return inBand&&rawUnitProduction(item,s)>0;
+  }).length;
+  // La réserve de résonance est partagée entre les automates actifs du groupe :
+  // un ancien automate peut briller, sans que cinq cartes additionnent cinq fois le meilleur rendement.
+  return 1+strongest*1.6/(Math.sqrt(activeInBand)*current);
 }
 function baseProduction(s=state,withResonance=true){
   const production=units.reduce((sum,u)=>sum+rawUnitProduction(u,s)*(withResonance?marsResonanceMultiplier(u,s):1),0);
@@ -334,12 +341,25 @@ function clickValue(){
 }
 function addDrops(amount){if(!Number.isFinite(amount)||amount<=0)return;state.drops+=amount;state.runTotal+=amount;state.planetTotal+=amount;state.lifetime+=amount;recordContractProgress("drops",amount);recordBossProgress(amount)}
 
+function isColossus(unit){return isMars()&&unit.powers===marsPowerPatterns.colossus}
+function colossusCapTax(owned){return Math.pow(COLOSSUS_CAP_TAX,MILESTONES.filter(milestone=>owned>=milestone).length)}
 function unitCost(unit,count=1,owned=state.owned[unit.id]){
-  const growth=unit.growth||COST_GROWTH,first=unit.baseCost*Math.pow(growth,owned)*costMultiplier();
+  const growth=unit.growth||COST_GROWTH;
+  if(isColossus(unit)){
+    let total=0;
+    for(let offset=0;offset<count;offset++)total+=unit.baseCost*Math.pow(growth,owned+offset)*colossusCapTax(owned+offset)*costMultiplier();
+    return Math.ceil(total);
+  }
+  const first=unit.baseCost*Math.pow(growth,owned)*costMultiplier();
   const total=first*(Math.pow(growth,count)-1)/(growth-1);
   return Math.ceil(total);
 }
 function maxAffordable(unit){
+  if(isColossus(unit)){
+    let count=0,cost=0;
+    while(count<100000){const next=unitCost(unit,1,state.owned[unit.id]+count);if(state.drops<cost+next)break;cost+=next;count++}
+    return{count,cost:count?Math.ceil(cost):unitCost(unit,1)};
+  }
   const growth=unit.growth||COST_GROWTH,first=unit.baseCost*Math.pow(growth,state.owned[unit.id])*costMultiplier();
   if(state.drops<first)return{count:0,cost:Math.ceil(first)};
   const count=Math.min(100000,Math.floor(Math.log(1+state.drops*(growth-1)/first)/Math.log(growth)));
@@ -467,7 +487,7 @@ function recordBossProgress(amount){
 }
 function recordBossAction(kind,amount=1){const boss=state.activeBoss,chapter=boss&&expeditionChapters.find(item=>item.id===boss.id);if(!boss||!chapter||chapter.bossType!==kind)return;boss.actionProgress=Math.min(boss.actionTarget,boss.actionProgress+amount);tryCompleteBoss()}
 function tryCompleteBoss(){const boss=state.activeBoss;if(!boss||boss.progress<boss.target||boss.actionProgress<boss.actionTarget)return;const chapter=expeditionChapters.find(item=>item.id===boss.id);state.activeBoss=null;completeChapter(chapter);addDrops(Math.max(500,baseProduction()*60));toast(`${chapter.name} vaincue !`);}
-function finalCost(){return (isMars()?1e78:1e32)*Math.pow(isMars()?100:10,state.newGamePlus)}
+function finalCost(){return (isMars()?1e92:1e32)*Math.pow(isMars()?100:10,state.newGamePlus)}
 function finaleMastery(){const requiredCycles=isMars()?4:3,requiredNodes=isMars()?4:3;return{requiredCycles,requiredNodes,ready:state.cycles>=requiredCycles&&state.dawnUpgrades.length>=requiredNodes}}
 function canBuildFinal(){return state.expedition.length===expeditionChapters.length&&!state.finalBuilt&&finaleMastery().ready&&state.drops>=finalCost()}
 function prepareFinale(){
