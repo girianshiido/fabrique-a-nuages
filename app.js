@@ -116,17 +116,24 @@ const dawnNodes = [
   {id:"contractor",icon:"📜",name:"Maître des contrats",cost:3,color:"#e8f5ed",description:"Récompenses de contrat ×2",kind:"contractReward",value:2,requires:"deep_sleep"},
   {id:"wide_horizon",icon:"🌄",name:"Horizon large",cost:3,color:"#fff3db",description:"Chaque contrat ajoute +4 % de production",kind:"contractBonus",value:.04,requires:"contractor"},
   {id:"born_ready",icon:"🧰",name:"Né prêt",cost:4,color:"#e7e5ff",description:"Chaque Aube commence avec 500 gouttes",kind:"start",value:500,requires:"lean_air"},
-  {id:"eternal_weather",icon:"♾️",name:"Météo éternelle",cost:5,color:"#e6f8ff",description:"Toute la production permanente ×2",kind:"all",value:2,requires:"wide_horizon"}
+  {id:"eternal_weather",icon:"♾️",name:"Météo éternelle",cost:5,color:"#e6f8ff",description:"Toute la production permanente ×2",kind:"all",value:2,requires:"wide_horizon"},
+  {id:"dawnflare",icon:"🌠",name:"Éclair d’aube",cost:4,color:"#ffe3a8",description:"Débloque un phénomène ultra-rare : production ×100 000 pendant 7 s",kind:"eventUnlock",value:1}
 ];
 
 const rareEvents = [
   {id:"rainbow",icon:"🌈",name:"Arc-en-ciel prismatique",description:"Clique pour obtenir ×12 condensation pendant 35 s",kind:"click",value:12,duration:35},
   {id:"supercell",icon:"⛈️",name:"Supercellule captive",description:"Clique pour obtenir ×5 production pendant 30 s",kind:"production",value:5,duration:30},
   {id:"golden",icon:"✨",name:"Front doré",description:"Clique pour gagner 90 secondes de production",kind:"instant",value:90,duration:0},
-  {id:"aurora",icon:"🌌",name:"Aurore contractuelle",description:"Clique pour accélérer le contrat actif de 35 %",kind:"contract",value:.35,duration:0}
+  {id:"aurora",icon:"🌌",name:"Aurore contractuelle",description:"Clique pour accélérer le contrat actif de 35 %",kind:"contract",value:.35,duration:0},
+  {id:"dawnflare",icon:"🌠",name:"Éclair d’aube",description:"Clique pour obtenir ×100 000 production pendant 7 s",kind:"production",value:100000,duration:7,requiresDawn:"dawnflare",weight:.35}
 ];
-const marsRareEventCopy={rainbow:{icon:"🌈",name:"Prisme de Phobos",description:"Clique pour obtenir ×12 extraction pendant 35 s"},supercell:{icon:"🌪️",name:"Diable de poussière",description:"Clique pour obtenir ×5 production pendant 30 s"},golden:{icon:"🔶",name:"Filon d’orichalque",description:"Clique pour gagner 90 secondes de production"},aurora:{icon:"🌌",name:"Aurore de Déimos",description:"Clique pour accélérer la mission active de 35 %"}};
+const marsRareEventCopy={rainbow:{icon:"🌈",name:"Prisme de Phobos",description:"Clique pour obtenir ×12 extraction pendant 35 s"},supercell:{icon:"🌪️",name:"Diable de poussière",description:"Clique pour obtenir ×5 production pendant 30 s"},golden:{icon:"🔶",name:"Filon d’orichalque",description:"Clique pour gagner 90 secondes de production"},aurora:{icon:"🌌",name:"Aurore de Déimos",description:"Clique pour accélérer la mission active de 35 %"},dawnflare:{icon:"☄️",name:"Éruption d’Olympus",description:"Clique pour obtenir ×100 000 extraction pendant 7 s"}};
 function displayRareEvent(event){return isMars()?{...event,...marsRareEventCopy[event.id]}:event}
+function unlockedRareEvents(s=state){return rareEvents.filter(event=>!event.requiresDawn||s.dawnUpgrades.includes(event.requiresDawn))}
+function drawRareEvent(s=state){
+  const events=unlockedRareEvents(s),total=events.reduce((sum,event)=>sum+(event.weight||1),0);let draw=Math.random()*total;
+  return events.find(event=>(draw-=event.weight||1)<=0)||events.at(-1);
+}
 
 const contractTemplates = [
   {id:"clicks",icon:"☝️",name:"Impulsion manuelle",description:"Condense {target} fois avant la fin",metric:"clicks",time:75},
@@ -481,7 +488,7 @@ function updateContract(){
   }
 }
 function startRareEvent(){
-  const event=rareEvents[Math.floor(Math.random()*rareEvents.length)];
+  const event=drawRareEvent();
   state.activeEvent={id:event.id,spawnedAt:now(),expiresAt:now()+20000,boostUntil:0};state.nextEventAt=now()+(70000+Math.random()*65000);render(true);playTone(590,.12);
 }
 function claimEvent(){
@@ -604,8 +611,8 @@ function renderContract(){
 }
 function renderDawnTree(){
   els.dawnBalance.textContent=dawnBalance();els.dawnSpent.textContent=`${state.dawnSpent} dépensée${state.dawnSpent>1?"s":""}`;
-  const marsNames=["Premier lever rouge","Main pressurisée","Cryosommeil","Âme de poussière","Titane léger","Prisme de Phobos","Maître des missions","Horizon d’Olympus","Colonie équipée","Mars éternelle"];
-  els.dawnTree.innerHTML=dawnNodes.map((node,index)=>{const bought=hasDawn(node.id),blocked=node.requires&&!hasDawn(node.requires),name=isMars()?marsNames[index]:node.name,required=node.requires?dawnNodes.findIndex(item=>item.id===node.requires):-1,requiredName=isMars()?marsNames[required]:node.requires&&dawnNode(node.requires).name,cycleName=isMars()?"Sol":"Aube";return `<button class="dawn-node ${bought?"purchased":""}" type="button" data-dawn="${node.id}" ${bought||!canBuyDawn(node)?"disabled":""} style="--node-color:${node.color}"><span class="node-head"><span class="node-icon">${bought?"✓":blocked?"🔒":node.icon}</span><strong>${name}</strong></span><p>${blocked?`Nécessite ${requiredName}`:node.description}</p><b>${bought?"Inscrite":`${node.cost} ${cycleName}${node.cost>1?"s":""}`}</b></button>`}).join("");
+  const marsNames=["Premier lever rouge","Main pressurisée","Cryosommeil","Âme de poussière","Titane léger","Prisme de Phobos","Maître des missions","Horizon d’Olympus","Colonie équipée","Mars éternelle","Éruption d’Olympus"];
+  els.dawnTree.innerHTML=dawnNodes.map((node,index)=>{const bought=hasDawn(node.id),blocked=node.requires&&!hasDawn(node.requires),name=isMars()?marsNames[index]:node.name,description=isMars()&&node.id==="dawnflare"?"Débloque un phénomène ultra-rare : extraction ×100 000 pendant 7 s":node.description,required=node.requires?dawnNodes.findIndex(item=>item.id===node.requires):-1,requiredName=isMars()?marsNames[required]:node.requires&&dawnNode(node.requires).name,cycleName=isMars()?"Sol":"Aube";return `<button class="dawn-node ${bought?"purchased":""}" type="button" data-dawn="${node.id}" ${bought||!canBuyDawn(node)?"disabled":""} style="--node-color:${node.color}"><span class="node-head"><span class="node-icon">${bought?"✓":blocked?"🔒":node.icon}</span><strong>${name}</strong></span><p>${blocked?`Nécessite ${requiredName}`:description}</p><b>${bought?"Inscrite":`${node.cost} ${cycleName}${node.cost>1?"s":""}`}</b></button>`}).join("");
 }
 function renderStrategy(){
   const path=currentPath(),techs=pathTechList(),projects=pathProjectList();els.strategyBadge.textContent=path?path.icon:"—";els.relicCount.textContent=relicCount();els.relicDescription.textContent=`+${(relicMultiplier()-1)*100|0} % de production permanente`;
