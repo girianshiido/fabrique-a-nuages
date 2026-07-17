@@ -4,8 +4,9 @@ const SAVE_KEY = "fabrique-nuages-save-v2";
 const LEGACY_SAVE_KEY = "fabrique-nuages-save-v1";
 const TIME_API = "https://gettimeapi.dev/v1/time?timezone=UTC";
 const COST_GROWTH = 1.15;
-const ECONOMY_VERSION = 5;
+const ECONOMY_VERSION = 6;
 const COLOSSUS_CAP_TAX = 850;
+const PIONEER_SUPER_POWER = 7777777;
 const BOSS_DURATION = 90;
 const BOSS_ACTION_BUFFER = 15;
 const EARTH_MILESTONES = [1,5,10,25,50,75,100,150,200,300,400,500,750,1000,1500,2500];
@@ -42,7 +43,7 @@ const earthUnits = [
 ].map(([id,name,icon,baseCost,production,description],index)=>({id,name,icon,baseCost,production,description,index}));
 
 const marsPowerPatterns={
-  pioneer:[3,3,4,3,5,4,6,3,8,10,4,7777777,3,4,10,25,4,10,50,100],
+  pioneer:[3,3,4,3,5,4,6,3,8,10,4,1,3,4,10,25,4,10,50,100],
   decade:[4,5,10,4,10,5,10,6,10,10,25,10,10,50,10,100,10,100,1000,10],
   volatile:[2,4,3,7,2,12,3,25,4,50,3,100,4,250,5,1000,3,10000,7,100000],
   colossus:[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000],
@@ -308,9 +309,14 @@ function rainMultiplier(){return isRaining()?rainPower():1}
 function activeEvent(){return state.activeEvent&&state.activeEvent.boostUntil>now()?rareEvents.find(event=>event.id===state.activeEvent.id):null}
 function eventMultiplier(kind){const event=activeEvent();return event&&event.kind===kind?event.value*dawnEffect("event",1)*pathEffect("event",1)*projectEffect("event",1):1}
 function unitUpgradeId(unit,index){return `unit_${unit.id}_${index}`}
+function isPioneer(unit){return isMars()&&unit.powers===marsPowerPatterns.pioneer}
+function pioneerSuperUpgradeId(unit,cap){return `pioneer_${unit.id}_${cap}`}
 function unitMilestonePower(unit,index){return unit.powers?.[index]??(index>=12?3:2)}
 function unitMultiplier(unit,s=state){
-  return MILESTONES.reduce((mult,_,index)=>s.upgrades.includes(unitUpgradeId(unit,index))?mult*unitMilestonePower(unit,index):mult,1);
+  const regular=MILESTONES.reduce((mult,_,index)=>s.upgrades.includes(unitUpgradeId(unit,index))?mult*unitMilestonePower(unit,index):mult,1);
+  if(!isPioneer(unit))return regular;
+  const superCaps=Math.floor((s.owned[unit.id]||0)/500);
+  return Array.from({length:superCaps},(_,index)=>(index+1)*500).reduce((mult,cap)=>s.upgrades.includes(pioneerSuperUpgradeId(unit,cap))?mult*PIONEER_SUPER_POWER:mult,regular);
 }
 function marsResonancePhase(){return Math.floor(now()/120000)%3}
 function marsResonanceName(){return ["Écho des pionniers","Révolte des ateliers","Marée des colosses"][marsResonancePhase()]}
@@ -375,7 +381,20 @@ function milestoneUpgrade(unit,index){
   const milestone=MILESTONES[index],power=unitMilestonePower(unit,index);
   return{id:unitUpgradeId(unit,index),unit,index,icon:unit.icon,name:`${unit.name} — ${MILESTONE_NAMES[index]}`,description:`Production de ${unit.name} ×${power}`,cost:Math.ceil(unit.baseCost*(milestone+2)*Math.pow(1.9,index+1)),condition:`Posséder ${format(milestone)} ${unit.name.toLowerCase()}${milestone>1?"s":""}`,unlocked:state.owned[unit.id]>=milestone,color:index>=12?"#eee4ff":"#e4f5ff"};
 }
-function nextUnitUpgrade(unit){for(let i=0;i<MILESTONES.length;i++)if(!hasUpgrade(unitUpgradeId(unit,i)))return milestoneUpgrade(unit,i);return null}
+function pioneerSuperUpgrade(unit,cap){
+  const tier=cap/500;
+  return{id:pioneerSuperUpgradeId(unit,cap),unit,milestone:cap,icon:"✹",name:`${unit.name} — Résonance ${format(cap)}`,description:`Production de ${unit.name} ×${format(PIONEER_SUPER_POWER)}`,cost:Math.ceil(unit.baseCost*(cap+2)*Math.pow(100000,tier)),condition:`Posséder ${format(cap)} ${unit.name.toLowerCase()}${cap>1?"s":""}`,unlocked:state.owned[unit.id]>=cap,color:"#ffe2a8",super:true};
+}
+function nextPioneerSuperUpgrade(unit){
+  const owned=state.owned[unit.id]||0,earned=Math.floor(owned/500);
+  for(let tier=1;tier<=earned;tier++){const cap=tier*500;if(!hasUpgrade(pioneerSuperUpgradeId(unit,cap)))return pioneerSuperUpgrade(unit,cap)}
+  return pioneerSuperUpgrade(unit,(earned+1)*500);
+}
+function nextUnitUpgrade(unit){
+  const regular=Array.from({length:MILESTONES.length},(_,index)=>index).map(index=>!hasUpgrade(unitUpgradeId(unit,index))?milestoneUpgrade(unit,index):null).find(Boolean);
+  const superUpgrade=isPioneer(unit)?nextPioneerSuperUpgrade(unit):null;
+  return [regular,superUpgrade].filter(Boolean).sort((a,b)=>a.milestone-(b.milestone)||(a.super?-1:1))[0]||null;
+}
 function effectiveGlobalUpgrade(upgrade){return isMars()?{...upgrade,cost:upgrade.cost*1e4,unlock:upgrade.unlock*1e4}:upgrade}
 function availableUpgrades(){
   const unitOnes=units.map(nextUnitUpgrade).filter(u=>u&&u.unlocked);
@@ -385,12 +404,17 @@ function availableUpgrades(){
 function lockedUpgradeHints(){
   const unitHints=units.map(nextUnitUpgrade).filter(u=>u&&!u.unlocked);
   const globalHints=globalUpgrades.map(effectiveGlobalUpgrade).filter(u=>!hasUpgrade(u.id)&&state.runTotal<u.unlock).map(u=>({...u,condition:`À ${format(u.unlock)} ${resourceName()}`}));
-  return [...unitHints,...globalHints].sort((a,b)=>(a.unit?MILESTONES[a.index]:a.unlock)-(b.unit?MILESTONES[b.index]:b.unlock)).slice(0,6);
+  return [...unitHints,...globalHints].sort((a,b)=>(a.unit?(a.milestone??MILESTONES[a.index]):a.unlock)-(b.unit?(b.milestone??MILESTONES[b.index]):b.unlock)).slice(0,6);
 }
 function buyUpgrade(id,event){
   if(!initialized||hasUpgrade(id))return;
   let upgrade=globalUpgrades.find(u=>u.id===id);if(upgrade)upgrade=effectiveGlobalUpgrade(upgrade);
-  if(!upgrade){const match=id.match(/^unit_(.+)_(\d+)$/),unit=match&&units.find(u=>u.id===match[1]);if(unit)upgrade=milestoneUpgrade(unit,Number(match[2]))}
+  if(!upgrade){
+    const regularMatch=id.match(/^unit_(.+)_(\d+)$/),regularUnit=regularMatch&&units.find(u=>u.id===regularMatch[1]);
+    const superMatch=id.match(/^pioneer_(.+)_(\d+)$/),superUnit=superMatch&&units.find(u=>u.id===superMatch[1]);
+    if(regularUnit)upgrade=milestoneUpgrade(regularUnit,Number(regularMatch[2]));
+    else if(superUnit&&isPioneer(superUnit))upgrade=pioneerSuperUpgrade(superUnit,Number(superMatch[2]));
+  }
   if(!upgrade||state.drops<upgrade.cost)return;
   const unlocked=upgrade.unit?upgrade.unlocked:state.runTotal>=upgrade.unlock;if(!unlocked)return;
   state.drops-=upgrade.cost;state.upgrades.push(id);state.stats.upgradesBought++;playTone(520,.13);burst(event,true);toast(`${upgrade.name} installée !`);render(true);save();
@@ -439,6 +463,11 @@ function rebalanceLegacyEconomy(){
   if(state.economyVersion<3&&state.activeBoss){
     const chapter=expeditionChapters.find(item=>item.id===state.activeBoss.id);
     if(chapter?.bossType==="rain")state.activeBoss.actionTarget=Math.min(state.activeBoss.actionTarget||bossActions.rain.target,bossActionTarget("rain"));
+  }
+  if(state.economyVersion<6&&isMars()){
+    // Les anciens paliers 500 des pionniers deviennent la première résonance,
+    // afin de préserver exactement leur puissance pour les sauvegardes existantes.
+    units.filter(isPioneer).forEach(unit=>{if(state.upgrades.includes(unitUpgradeId(unit,11))&&!state.upgrades.includes(pioneerSuperUpgradeId(unit,500)))state.upgrades.push(pioneerSuperUpgradeId(unit,500))});
   }
   state.economyVersion=ECONOMY_VERSION;
 }
@@ -631,7 +660,7 @@ function renderRecords(){
 
 function format(number){
   if(!Number.isFinite(number))return "∞";if(number<0)return `−${format(-number)}`;if(number<1000)return number<10&&number%1?number.toFixed(1):Math.floor(number).toLocaleString("fr-FR");
-  const suffixes=["k","M","Md","Bn","Qa","Qi","Sx","Sp","Oc","No","Dc","Ud","Dd","Td","Qad","Qid","Sxd","Spd","Ocd","Nod"];
+  const suffixes=["k","M","Md","Bn","Qa","Qi","Sx","Sp","Oc","No","Dc","Ud","Dd","Td","Qad","Qid","Sxd","Spd","Ocd","Nod","Vg","Uvg","Dvg","Tvg","Qavg","Qivg","Sxvg","Spvg","Ocv","Novg","Tg","Utg","Dtg","Ttg","Qatg","Qitg","Sxtg","Sptg","Octg","Notg"];
   const tier=Math.floor(Math.log10(number)/3);if(tier<=suffixes.length){const value=number/Math.pow(1000,tier);return `${value<10?value.toFixed(2):value<100?value.toFixed(1):Math.floor(value)} ${suffixes[tier-1]}`}
   return number.toExponential(2).replace("e+","e");
 }
