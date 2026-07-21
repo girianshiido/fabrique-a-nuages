@@ -797,7 +797,9 @@ function renderRecords(){
 
 function format(number){
   if(!Number.isFinite(number))return "∞";if(number<0)return `−${format(-number)}`;if(number<1000)return number<10&&number%1?number.toFixed(1):Math.floor(number).toLocaleString(GameI18N.locale==="en"?"en-US":"fr-FR");
-  const suffixes=["k","M","Md","Bn","Qa","Qi","Sx","Sp","Oc","No","Dc","Ud","Dd","Td","Qad","Qid","Sxd","Spd","Ocd","Nod","Vg","Uvg","Dvg","Tvg","Qavg","Qivg","Sxvg","Spvg","Ocv","Novg","Tg","Utg","Dtg","Ttg","Qatg","Qitg","Sxtg","Sptg","Octg","Notg"];
+  const suffixes=GameI18N.locale==="en"
+    ?["k","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc","Ud","Dd","Td","Qad","Qid","Sxd","Spd","Ocd","Nod","Vg","Uvg","Dvg","Tvg","Qavg","Qivg","Sxvg","Spvg","Ocv","Novg","Tg","Utg","Dtg","Ttg","Qatg","Qitg","Sxtg","Sptg","Octg","Notg"]
+    :["k","M","Md","Bn","Qa","Qi","Sx","Sp","Oc","No","Dc","Ud","Dd","Td","Qad","Qid","Sxd","Spd","Ocd","Nod","Vg","Uvg","Dvg","Tvg","Qavg","Qivg","Sxvg","Spvg","Ocv","Novg","Tg","Utg","Dtg","Ttg","Qatg","Qitg","Sxtg","Sptg","Octg","Notg"];
   const tier=Math.floor(Math.log10(number)/3);if(tier<=suffixes.length){const value=number/Math.pow(1000,tier);return `${value<10?value.toFixed(2):value<100?value.toFixed(1):Math.floor(value)} ${suffixes[tier-1]}`}
   return number.toExponential(2).replace("e+","e");
 }

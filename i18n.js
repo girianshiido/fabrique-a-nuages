@@ -170,6 +170,32 @@ Cyclone sulfurique|Sulfur cyclone
 Trouée solaire|Solar opening
 Messager d’Ishtar|Ishtar messenger
 Flash de Lucifer|Lucifer flash
+Clique pour obtenir ×12 condensation pendant 35 s|Click for ×12 manual condensation for 35 s
+Clique pour obtenir ×5 production pendant 30 s|Click for ×5 production for 30 s
+Clique pour gagner 90 secondes de production|Click to gain 90 seconds of production
+Clique pour accélérer le contrat actif de 35 %|Click to speed up the active contract by 35%
+Clique pour obtenir ×100 000 production pendant 7 s|Click for ×100,000 production for 7 s
+Clique pour obtenir ×12 extraction pendant 35 s|Click for ×12 extraction for 35 s
+Clique pour accélérer la mission active de 35 %|Click to speed up the active mission by 35%
+Clique pour obtenir ×100 000 extraction pendant 7 s|Click for ×100,000 extraction for 7 s
+Clique pour obtenir ×12 captation pendant 35 s|Click for ×12 manual capture for 35 s
+Clique pour accélérer la mission active de 35 %|Click to speed up the active mission by 35%
+Clique pour obtenir ×100 000 captation pendant 7 s|Click for ×100,000 manual capture for 7 s
+Condense {target} fois avant la fin|Perform {target} condensations before time runs out
+Produis {target} gouttes avant la fin|Produce {target} drops before time runs out
+Achète {target} automates avant la fin|Buy {target} machines before time runs out
+Effectue {target} extractions manuelles avant la fin|Perform {target} manual extractions before time runs out
+Extrais {target} grains avant la fin|Extract {target} grains before time runs out
+Déploie {target} machines avant la fin|Deploy {target} machines before time runs out
+Effectue {target} captations manuelles avant la fin|Perform {target} manual captures before time runs out
+Capture {target} lumens avant la fin|Capture {target} lumens before time runs out
+Déploie {target} machines flottantes avant la fin|Deploy {target} floating machines before time runs out
+Impulsion héliostatique|Heliostatic impulse
+Réserve lumineuse|Luminous reserve
+Lancement d’aérostats|Aerostat launch
+Pulsation manuelle|Manual pulse
+Réserve de régolithe|Regolith reserve
+Déploiement colonial|Colonial deployment
 Impulsion manuelle|Manual impulse
 Réserve d’humidité|Moisture reserve
 Montée en cadence|Ramp-up
@@ -655,9 +681,219 @@ Gardien d’Ishtar|Keeper of Ishtar
 Corrosif|Corrosive
 Héliostatique|Heliostatic
 Vénus infinie|Infinite Venus
+Condensation manuelle ×2|Manual condensation ×2
+Toute la production ×1,5|All production ×1.5
+L’averse se déclenche 4 clics plus tôt|Showers trigger 4 clicks earlier
+Condensation manuelle ×3|Manual condensation ×3
+Bonus d’averse augmenté de +1|Shower bonus increased by +1
+Prix des automates −7 %|Machine costs −7%
+Toute la production ×2|All production ×2
+Les averses durent 15 s de plus|Showers last 15 s longer
+Chaque clic ajoute 5 % de la production/s|Each click adds 5% of production/s
+Jusqu’à 24 h de gains hors ligne|Up to 24 h of offline gains
+Toute la production ×3|All production ×3
+Condensation manuelle ×10|Manual condensation ×10
+Les averses durent 30 s de plus|Showers last 30 s longer
+Prix des automates −10 %|Machine costs −10%
+Toute la production ×5|All production ×5
+Bonus d’averse augmenté de +2|Shower bonus increased by +2
+Gains hors ligne ×5|Offline gains ×5
+Toute la production ×10|All production ×10
+Toute la production permanente +25 %|Permanent production +25%
+Événements rares 2× plus puissants|Rare events are 2× stronger
+Récompenses de contrat ×2|Contract rewards ×2
+Chaque contrat ajoute +4 % de production|Each contract adds +4% production
+Chaque Aube commence avec 5 M gouttes|Each Dawn starts with 5 M drops
+Toute la production permanente ×2|Permanent production ×2
+Débloque un phénomène ultra-rare : production ×100 000 pendant 7 s|Unlocks an ultra-rare event: ×100,000 production for 7 s
+Temps, contrats et phénomènes rares|Time, contracts and rare events
+Contrats +50 % de récompense|Contracts: +50% reward
+Surcharges manuelles et tempêtes rouges|Manual surges and red storms
+Colonies massives et coûts comprimés|Massive colonies and reduced costs
+Percées solaires +1 multiplicateur|Solar breakthroughs: +1 multiplier
+Aérostats massifs et chantiers accélérés|Massive aerostats and faster works
+Lumière, missions et temps suspendu|Light, missions and suspended time
+Missions +50 % de récompense|Missions: +50% reward
+Étincelle de régolithe|Regolith spark
+Main d’Arès|Hand of Ares
+Câble sous sable|Buried cable
+Paratonnerre de dôme|Dome lightning rod
+Tempête de Mars|Mars tempest
+Plan du premier dôme|First dome blueprint
+Usine de cratère|Crater factory
+Chaîne pressurisée|Pressurised line
+Robots de Valles|Valles robots
+Plans auto-imprimés|Self-printing blueprints
+Mégacolonie|Megacolony
+Boucle de Phobos|Phobos loop
+Sol de demain|Tomorrow's Sol
+Instant des deux lunes|Moment of the two moons
+Éternité d’Arès|Eternity of Ares
+Bobine d’Arès|Ares coil
+Barrage de régolithe|Regolith dam
+Station de tempête polaire|Polar storm station
+Chantier de Valles|Valles shipyard
+Horloge de Phobos|Phobos clock
+Bibliothèque des sols futurs|Library of future Sols
+Porte de Déimos|Deimos gate
+Étincelle sulfurique|Sulfur spark
+Main de Lucifer|Hand of Lucifer
+Fil vitrifié|Vitrified wire
+Surcharge dorée|Golden surge
+Coffre de corrosion|Corrosion vault
+Ouragan de Vénus|Venus hurricane
+Plan du premier aérostat|First aerostat blueprint
+Convoyeur de nuages|Cloud conveyor
+Chaîne suspendue|Suspended line
+Convoi des strates|Strata convoy
+Mégacité d’Aphrodite|Aphrodite megacity
+Seconde vénusienne|Venusian second
+Archive du crépuscule|Twilight archive
+Boucle de Maxwell|Maxwell loop
+Aube de demain|Tomorrow's dawn
+Rembobinage atmosphérique|Atmospheric rewind
+Instant de Lucifer|Moment of Lucifer
+Éternité d’Ishtar|Eternity of Ishtar
+Bobine de Lucifer|Lucifer coil
+Station du grand cyclone|Great cyclone station
+Fonderie des strates|Strata foundry
+Horloge du crépuscule|Twilight clock
+Bibliothèque des aubes futures|Library of future dawns
+Porte d’Hélios|Helios gate
+Une cité flottante autonome dans la première strate.|An autonomous floating city in the first stratum.
+Stabilise les chantiers malgré les vents supersoniques.|Stabilises works despite supersonic winds.
+Module l’ensoleillement de la planète entière.|Regulates the sunlight of the entire planet.
+Unit toutes les cités du crépuscule en un seul empire.|Unites every twilight city into one empire.
+Étincelle captive|Captured spark
+Main de tonnerre|Thunder hand
+Production totale ×1,7|Total production ×1.7
+Averse 3 clics plus tôt|Shower 3 clicks earlier
+Événements de tempête ×2|Storm events ×2
+Convoyeur de brume|Mist conveyor
+Chaque automate ×1,5|Each machine ×1.5
+Ligne céleste|Skyline assembly
+Robots pluviométriques|Rainfall robots
+Plans auto-répliquants|Self-replicating blueprints
+Chaque automate ×2|Each machine ×2
+Contrats +50 % récompense|Contracts: +50% reward
+Mégaligne|Megaline
+Seconde pliée|Folded second
+Événements rares ×2|Rare events ×2
+Chaque contrat +3 % production|Each contract: +3% production
+Pluie de demain|Tomorrow's rain
++12 h de gains hors ligne|+12 h of offline gains
+Événements rares ×3|Rare events ×3
+Éternité météo|Weather eternity
+Bobine de foudre|Lightning coil
+La première centrale à éclairs.|The first lightning power plant.
+Barrage de mousson|Monsoon dam
+Retient une saison entière de pluie.|Holds back an entire rainy season.
+Canalise les tempêtes depuis le ciel.|Channels storms from the sky.
+Chantier céleste|Skyward shipyard
+Assemble les automates à l’échelle des nuages.|Assembles machines on a cloud-scale.
+Mégacité flottante|Floating megacity
+Un bassin industriel au-dessus des océans.|An industrial basin above the oceans.
+Fonderie stratosphérique|Stratospheric foundry
+Fabrique des climats en continu.|Manufactures climates continuously.
+Horloge de mousson|Monsoon clock
+Synchronise chaque goutte avec le temps.|Synchronises every drop with time.
+Bibliothèque des futurs|Library of futures
+Prévoit toutes les averses possibles.|Forecasts every possible shower.
+Porte des saisons|Gate of seasons
+Traverse les cycles sans perdre le rythme.|Crosses cycles without losing momentum.
+Heure réseau|Network time
+Production hors ligne vérifiée en UTC|Offline production verified in UTC
+Réseau indisponible : heure de l’appareil utilisée|Network unavailable: device time used
+Élévation|Elevation
+Contrat expiré — le prochain arrive bientôt.|Contract expired — the next one arrives soon.
+Le phénomène-boss|The boss phenomenon
+La tempête-boss|The storm boss
+Phénomène-boss|Boss phenomenon
+Crépuscule éternel|Eternal twilight
+Les Cités de Vénus illuminent le système solaire.|The Cities of Venus illuminate the solar system.
+La Couronne de Lucifer s’ouvre comme une fleur d’or. Sous les nuages acides, une planète entière apprend à respirer et toutes les strates chantent à l’unisson.|Lucifer's Crown opens like a golden flower. Beneath the acid clouds, an entire planet learns to breathe and every stratum sings in unison.
+Nouvelle Vénus+|New Venus+
+Élever un nouvel empire|Raise a new empire
+Le Cœur de Mars s’est éveillé.|The Heart of Mars has awakened.
+Les océans rouges renvoient soudain un signal aveuglant. Il ne vient pas de Mars : derrière les nuages de Vénus, des milliers de lumières dessinent une cité qui attend d’être fondée.|The red oceans suddenly return a blinding signal. It does not come from Mars: behind Venus's clouds, thousands of lights trace a city waiting to be founded.
+Traverser les nuages de Vénus|Cross Venus's clouds
+Le Climatologue vient de détecter… autre chose.|The Climatologist has detected… something else.
+Le signal ne provient d’aucun ciel terrestre. Deux petites lunes apparaissent sur l’écran, puis une coordonnée : 18.4° N, 77.5° E.|The signal comes from no earthly sky. Two small moons appear on the screen, then one coordinate: 18.4° N, 77.5° E.
+Destination verrouillée|Destination locked
+Déchiffrer le signal|Decode the signal
+Empire de Vénus achevé|Venus Empire complete
+MARS — SOL 1 : la colonie s’éveille.|MARS — SOL 1: the colony awakens.
+Nouvelle planète découverte : Mars|New planet discovered: Mars
+VÉNUS — STRATE 1 : les premiers aérostats s’élèvent.|VENUS — STRATUM 1: the first aerostats rise.
+Nouvelle planète découverte : Vénus|New planet discovered: Venus
+Main pressurisée|Pressurised hand
+Âme de poussière|Dust soul
+Titane léger|Light titanium
+Maître des missions|Mission master
+Colonie équipée|Equipped colony
+Mars éternelle|Eternal Mars
+Première lueur d’or|First golden gleam
+Main vitrifiée|Vitrified hand
+Âme solaire|Solar soul
+Coque légère|Light hull
+Maître des traversées|Crossing master
+Cité équipée|Equipped city
+Vénus éternelle|Eternal Venus
+Débloque le Flash de Lucifer : captation ×100 000 pendant 7 s|Unlocks Lucifer Flash: ×100,000 capture for 7 s
+Chaque Élévation commence avec 5 Bn lumens|Each Elevation starts with 5 T lumens
+Débloque un phénomène ultra-rare : extraction ×100 000 pendant 7 s|Unlocks an ultra-rare event: ×100,000 extraction for 7 s
+Chaque Sol commence avec 5 Md grains|Each Sol starts with 5 B grains
+La tempête observe tes réserves.|The storm watches your reserves.
+Le front se resserre : la production automatique est réduite à 80 %.|The front tightens: automatic production is reduced to 80%.
+Œil du cyclone : la production automatique est réduite à 60 %.|Eye of the cyclone: automatic production is reduced to 60%.
+le cataclysme|the cataclysm
+la tempête|the storm
+· RÉSONANCE|· RESONANCE
+Mémoire centrale|Central memory
+Chaque Élévation fait monter les cités dans l’atmosphère. Dépense-les pour modifier tous tes futurs archipels.|Each Elevation lifts the cities into the atmosphere. Spend them to modify all your future archipelagos.
+Chaque Sol provient d’un redémarrage de la colonie. Dépense-les pour modifier toutes tes implantations futures.|Each Sol comes from restarting the colony. Spend them to modify all your future settlements.
+Chaque Aube provient d’un redémarrage. Dépense-les pour modifier toutes tes ères futures.|Each Dawn comes from a restart. Spend them to modify all your future eras.
+Presse le noyau solaire et déploie les premiers aérostats.|Press the solar core and deploy the first aerostats.
+Active la surcadence pour produire ×25, mais coupe-la avant 100 % de corrosion.|Activate overdrive for ×25 production, but stop it before 100% corrosion.
+Les 32 machines possèdent 20 caps jusqu’à 500 000 exemplaires.|The 32 machines have 20 milestones up to 500,000 copies.
+Lance quatre grands chantiers : ils progressent même lorsque le jeu est fermé.|Launch four great works: they continue even while the game is closed.
+Chaque Élévation ouvre une nouvelle strate et renforce durablement l’archipel.|Each Elevation opens a new stratum and permanently strengthens the archipelago.
+Unis les cités sous la Couronne de Lucifer pour achever l’Ascension.|Unite the cities beneath Lucifer's Crown to complete the Ascent.
+Presse le noyau de poussière et déploie les premières machines.|Press the dust core and deploy the first machines.
+Les 30 automates possèdent 20 caps très différents, jusqu’à 50 000 exemplaires.|The 30 machines have 20 very different milestones, up to 50,000 copies.
+Observe la résonance orbitale : les anciennes machines peuvent redevenir dominantes.|Watch orbital resonance: older machines can become dominant again.
+Les missions coloniales et anomalies accélèrent la terraformation.|Colonial missions and anomalies accelerate terraforming.
+Chaque Sol permet de choisir une doctrine et d’inscrire de nouveaux héritages.|Each Sol lets you choose a doctrine and record new legacies.
+Le Cœur de Mars exige une conquête complète et une quantité extrême de grains.|The Heart of Mars requires a complete conquest and an extreme quantity of grains.
+Presse le nuage et construis tes premiers automates.|Press the cloud and build your first machines.
+Chaque automate possède 16 paliers, de 1 à 2 500 exemplaires.|Each machine has 16 milestones, from 1 to 2,500 copies.
+Les innovations apparaissent lorsque leurs conditions sont remplies, puis disparaissent après achat.|Innovations appear when their conditions are met, then disappear after purchase.
+Les contrats météo donnent des objectifs temporaires ; chaque réussite augmente durablement la production.|Weather contracts give temporary objectives; each success permanently increases production.
+Capture les phénomènes rares pour profiter de leur bonus temporaire.|Capture rare phenomena to benefit from their temporary bonus.
+Fichier de sauvegarde invalide.|Invalid save file.
+Désactiver les sons|Disable sounds
+Activer les sons|Enable sounds
+Effacer toute la progression, y compris les planètes et les Aubes ?|Erase all progress, including planets and Dawns?
+Surcharge de poussière|Dust surge
+Un nouveau|A new
+reçu|received
+reçue|received
+percée solaire|solar breakthrough
+Climatologue du Multivers|Multiverse Climatologist
+Presser le noyau solaire pour capter des lumens|Press the solar core to capture lumens
+Presser le noyau de poussière pour extraire des grains|Press the dust core to extract grains
+Ouvrir l’arbre des Sols|Open the Sol tree
+Ouvrir l’arbre des Aubes|Open the Dawn tree
+Choisir la langue|Choose language
+La Fabrique à Nuages, revenir en haut|The Cloudworks, back to top
+Afficher l’aide|Show help
+Presser le nuage pour récolter des gouttes|Press the cloud to collect drops
+À 20 : averse ×2 pendant 15 secondes|At 20: shower ×2 for 15 seconds
+Source de l’heure|Time source
+Synchronisation…|Synchronising…
 `);
   const exact={...en};
-  const embedded=new RegExp(Object.keys(exact).sort((a,b)=>b.length-a.length).map(value=>value.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|"),"g");
+  const embeddedKeys=Object.keys(exact).sort((a,b)=>b.length-a.length);
   const replacements=[
     [/^À (\d+) : (.+) pendant (.+) secondes$/,"At $1: $2 for $3 seconds"],
     [/^prochain cap (.+)$/,"next milestone $1"],[/^tous les caps franchis$/,"all milestones reached"],
@@ -669,16 +905,28 @@ Vénus infinie|Infinite Venus
     [/^(.+) accomplis$/,"$1 completed"],[/^Prochaine Élévation$/,"Next Elevation"],[/^Prochain Sol$/,"Next Sol"],[/^Prochain cycle$/,"Next cycle"],
     [/^(.+) disponible(s?)$/,"$1 available$2"],[/^(.+) dépensée(s?)$/,"$1 spent"],
     [/^Construction · (.+)$/,"Construction · $1"],[/^Nécessite (.+)$/,"Requires $1"],
-    [/^(.+) /,match=>match]
+    [/^Effectue (.+) captations manuelles avant la fin$/,"Perform $1 manual captures before time runs out"],
+    [/^Capture (.+) lumens avant la fin$/,"Capture $1 lumens before time runs out"],
+    [/^Déploie (.+) machines flottantes avant la fin$/,"Deploy $1 floating machines before time runs out"],
+    [/^Effectue (.+) extractions manuelles avant la fin$/,"Perform $1 manual extractions before time runs out"],
+    [/^Extrais (.+) grains avant la fin$/,"Extract $1 grains before time runs out"],
+    [/^Déploie (.+) machines avant la fin$/,"Deploy $1 machines before time runs out"],
+    [/^Condense (.+) fois avant la fin$/,"Perform $1 condensations before time runs out"],
+    [/^Produis (.+) gouttes avant la fin$/,"Produce $1 drops before time runs out"],
+    [/^Achète (.+) automates avant la fin$/,"Buy $1 machines before time runs out"]
   ];
   const dynamic=value=>{
     if(exact[value])return exact[value];
     let out=value;
+    for(const [pattern,replacement] of replacements){
+      if(pattern.test(out))out=out.replace(pattern,replacement);
+    }
+    for(const source of embeddedKeys){if(out.includes(source))out=out.replaceAll(source,exact[source]);}
     const rules=[
-      [/À (\d+) :/g,"At $1:"],[/pendant (\d+) secondes/g,"for $1 seconds"],[/prochain cap/g,"next milestone"],[/tous les caps franchis/g,"all milestones reached"],[/Acheter/g,"Buy"],[/Pas encore abordable/g,"Not affordable yet"],[/Prochain automate :/g,"Next machine:"],[/Se révèle à/g,"Unlocks at"],[/ou avec/g,"or with"],[/technologies encore inconnues/g,"technologies still unknown"],[/Réussites :/g,"Successes:"],[/production permanente/g,"permanent production"],[/production totale/g,"total production"],[/Gains hors ligne/g,"Offline gains"],[/Averses/g,"Showers"],[/Automates/g,"Machines"],[/automates/g,"machines"],[/contrat/g,"contract"],[/Contrats/g,"Contracts"],[/phénomènes rares/g,"rare events"],[/Événements rares/g,"Rare events"],[/production/g,"production"],[/clics/g,"clicks"],[/clic/g,"click"],[/avant la fin/g,"before time runs out"],[/chaque/g,"each"],[/Chaque/g,"Each"],[/toutes/g,"all"],[/Toute/g,"All"],[/moins chers/g,"cheaper"],[/plus tôt/g,"earlier"],[/secondes/g,"seconds"],[/seconde/g,"second"],[/achevé/g,"completed"],[/achevée/g,"completed"],[/construite/g,"built"],[/inscrite/g,"recorded"],[/maîtrisée/g,"mastered"],[/débloqué/g,"unlocked"],[/débloquée/g,"unlocked"]
+      [/À (\d+) :/g,"At $1:"],[/pendant (\d+) secondes/g,"for $1 seconds"],[/prochain cap/g,"next milestone"],[/tous les caps franchis/g,"all milestones reached"],[/Acheter/g,"Buy"],[/Pas encore abordable/g,"Not affordable yet"],[/Prochain automate :/g,"Next machine:"],[/Se révèle à/g,"Unlocks at"],[/ou avec/g,"or with"],[/technologies encore inconnues/g,"technologies still unknown"],[/Réussites :/g,"Successes:"],[/production permanente/g,"permanent production"],[/production totale/g,"total production"],[/Gains hors ligne/g,"Offline gains"],[/Averses/g,"Showers"],[/Automates/g,"Machines"],[/automates/g,"machines"],[/contrat/g,"contract"],[/Contrats/g,"Contracts"],[/phénomènes rares/g,"rare events"],[/Événements rares/g,"Rare events"],[/production/g,"production"],[/clics/g,"clicks"],[/clic/g,"click"],[/avant la fin/g,"before time runs out"],[/chacun/g,"each"],[/chaque/g,"each"],[/Chaque/g,"Each"],[/toutes/g,"all"],[/Toute/g,"All"],[/moins chers/g,"cheaper"],[/plus tôt/g,"earlier"],[/secondes/g,"seconds"],[/seconde/g,"second"],[/capturée/g,"captured"],[/capturé/g,"captured"],[/achevé/g,"completed"],[/achevée/g,"completed"],[/construite/g,"built"],[/inscrite/g,"recorded"],[/maîtrisée/g,"mastered"],[/débloqué/g,"unlocked"],[/débloquée/g,"unlocked"]
     ];
     rules.forEach(([pattern,replacement])=>out=out.replace(pattern,replacement));
-    return out.replace(embedded,match=>exact[match]);
+    return out.replace(/\s+([!?])/g,"$1");
   };
   function english(value){
     if(typeof value!=="string")return value;
