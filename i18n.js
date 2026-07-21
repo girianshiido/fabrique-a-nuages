@@ -90,7 +90,7 @@ Une relique par projet|One relic per project
 Expédition du Multivers|Multiverse expedition
 Conquête de Mars|Mars conquest
 Ascension de Vénus|Venus ascent
-Succès|Achievements
+Succès|Achievement
 Nouveau cycle|New cycle
 Nouvelle Élévation|New Elevation
 Nouveau Sol|New Sol
@@ -542,9 +542,9 @@ Titan d’Ishtar éveillé|Ishtar titan awakened
 Empire atmosphérique|Atmospheric empire
 Œil de Vénus|Eye of Venus
 clics concentrés|focused clicks
-averses déclenchées|showers triggered
-phénomènes capturés|phenomena captured
-surcadences activées|overdrives activated
+averses déclenchées|triggered showers
+phénomènes capturés|captured phenomena
+surcadences activées|activated overdrives
 Main de nuage|Cloud hand
 Collecteur|Collector
 Bâtisseur|Builder
@@ -901,9 +901,31 @@ Synchronisation…|Synchronising…
     [/^Prochain automate : (.+)$/,"Next machine: $1"],[/^Se révèle à (.+) ou avec (.+)$/,"Unlocks at $1 or with $2"],
     [/^\+ (.+) technologies encore inconnues$/,"+ $1 technologies still unknown"],
     [/^Réussites : (.+) · \+(.+) % production$/,"Successes: $1 · +$2% production"],
+    [/^Réserve : (.+) · (.+) s\. Il faudra aussi (.+) (.+)\.$/,"Reserve: $1 · $2 s. You must also complete $3 $4."],
+    [/^Jalon accompli : (.+)$/,"Milestone achieved: $1"],
+    [/^(Le phénomène-boss|La tempête-boss) s’est dissipé(?:e)?\. Prépare une nouvelle tentative\.$/,"$1 has dissipated. Prepare a new attempt."],
+    [/^Phase (.+) : la tempête se renforce !$/,"Phase $1: the storm intensifies!"],
+    [/^(.+) vaincu(?:e)? !$/,"$1 defeated!"],
+    [/^(.+) déclenchée : production ×(.+) !$/,"$1 triggered: ×$2 production!"],
+    [/^Cette ère a produit (.+) (.+)\. Une nouvelle (.+) sera disponible, et ta prochaine voie définira le rythme du cycle\.$/,"This era produced $1 $2. A new $3 will be available, and your next path will set the cycle's pace."],
+    [/^Il faut produire (.+) (.+) dans cette ère avant de pouvoir recommencer\.$/,"You need to produce $1 $2 this era before restarting."],
+    [/^Choisis une voie pour la prochaine ère\. Les recherches et projets de voie repartiront à zéro, mais les reliques resteront\.$/,"Choose a path for the next era. Path research and projects will reset, but relics remain."],
+    [/^(.+) (\d+) reçu(?:e)? — \+(.+) · (.+) disponible(?:s)?$/,"$1 $2 received — +$3 · $4 available"],
+    [/^Retour à la fabrique : \+(.+) (.+) en (.+)\.$/,"Back at the Cloudworks: +$1 $2 in $3."],
+    [/^(.+) achevé dans les nuages$/,"$1 completed among the clouds"],
+    [/^Nouvelle strate stabilisée : (.+)$/,"New stratum stabilized: $1"],
+    [/^Chantier lancé : (.+)$/,"Construction started: $1"],
+    [/^(.+) installée !$/,"$1 installed!"],
+    [/^(.+) : cap des (.+)$/,"$1: milestone $2"],
+    [/^Nouveau contrat : (.+)$/,"New contract: $1"],
+    [/^Contrat réussi : \+(.+) (.+)$/,"Contract completed: +$1 $2"],
+    [/^Expédition : (.+)$/,"Expedition: $1"],
+    [/^(.+) achevé : relique obtenue$/,"$1 completed: relic acquired"],
+    [/^(.+) inscrite dans la Constellation$/,"$1 recorded in the Constellation"],
+    [/^(.+) découvert$/,"$1 discovered"],
     [/^Bonus actif : (.+)$/,"Active bonus: $1"],[/^Limite (.+) h$/,"Limit $1 h"],
     [/^(.+) accomplis$/,"$1 completed"],[/^Prochaine Élévation$/,"Next Elevation"],[/^Prochain Sol$/,"Next Sol"],[/^Prochain cycle$/,"Next cycle"],
-    [/^(.+) disponible(s?)$/,"$1 available$2"],[/^(.+) dépensée(s?)$/,"$1 spent"],
+    [/^(.+) disponible(s?)$/,"$1 available"],[/^(.+) dépensée(s?)$/,"$1 spent"],
     [/^Construction · (.+)$/,"Construction · $1"],[/^Nécessite (.+)$/,"Requires $1"],
     [/^Effectue (.+) captations manuelles avant la fin$/,"Perform $1 manual captures before time runs out"],
     [/^Capture (.+) lumens avant la fin$/,"Capture $1 lumens before time runs out"],
@@ -923,10 +945,10 @@ Synchronisation…|Synchronising…
     }
     for(const source of embeddedKeys){if(out.includes(source))out=out.replaceAll(source,exact[source]);}
     const rules=[
-      [/À (\d+) :/g,"At $1:"],[/pendant (\d+) secondes/g,"for $1 seconds"],[/prochain cap/g,"next milestone"],[/tous les caps franchis/g,"all milestones reached"],[/Acheter/g,"Buy"],[/Pas encore abordable/g,"Not affordable yet"],[/Prochain automate :/g,"Next machine:"],[/Se révèle à/g,"Unlocks at"],[/ou avec/g,"or with"],[/technologies encore inconnues/g,"technologies still unknown"],[/Réussites :/g,"Successes:"],[/production permanente/g,"permanent production"],[/production totale/g,"total production"],[/Gains hors ligne/g,"Offline gains"],[/Averses/g,"Showers"],[/Automates/g,"Machines"],[/automates/g,"machines"],[/contrat/g,"contract"],[/Contrats/g,"Contracts"],[/phénomènes rares/g,"rare events"],[/Événements rares/g,"Rare events"],[/production/g,"production"],[/clics/g,"clicks"],[/clic/g,"click"],[/avant la fin/g,"before time runs out"],[/chacun/g,"each"],[/chaque/g,"each"],[/Chaque/g,"Each"],[/toutes/g,"all"],[/Toute/g,"All"],[/moins chers/g,"cheaper"],[/plus tôt/g,"earlier"],[/secondes/g,"seconds"],[/seconde/g,"second"],[/capturée/g,"captured"],[/capturé/g,"captured"],[/achevé/g,"completed"],[/achevée/g,"completed"],[/construite/g,"built"],[/inscrite/g,"recorded"],[/maîtrisée/g,"mastered"],[/débloqué/g,"unlocked"],[/débloquée/g,"unlocked"]
+      [/À (\d+) :/g,"At $1:"],[/pendant (\d+) secondes/g,"for $1 seconds"],[/prochain cap/g,"next milestone"],[/tous les caps franchis/g,"all milestones reached"],[/Acheter/g,"Buy"],[/Pas encore abordable/g,"Not affordable yet"],[/Prochain automate :/g,"Next machine:"],[/Se révèle à/g,"Unlocks at"],[/ou avec/g,"or with"],[/technologies encore inconnues/g,"technologies still unknown"],[/Réussites :/g,"Successes:"],[/production permanente/g,"permanent production"],[/production totale/g,"total production"],[/Gains hors ligne/g,"Offline gains"],[/Averses/g,"Showers"],[/Automates/g,"Machines"],[/automates/g,"machines"],[/contrat/g,"contract"],[/Contrats/g,"Contracts"],[/phénomènes rares/g,"rare events"],[/Événements rares/g,"Rare events"],[/production/g,"production"],[/\bclics\b/g,"clicks"],[/\bclic\b/g,"click"],[/avant la fin/g,"before time runs out"],[/chacun/g,"each"],[/chaque/g,"each"],[/Chaque/g,"Each"],[/toutes/g,"all"],[/Toute/g,"All"],[/moins chers/g,"cheaper"],[/plus tôt/g,"earlier"],[/secondes/g,"seconds"],[/seconde/g,"second"],[/capturée/g,"captured"],[/capturé/g,"captured"],[/achevé/g,"completed"],[/achevée/g,"completed"],[/construite/g,"built"],[/inscrite/g,"recorded"],[/maîtrisée/g,"mastered"],[/débloqué/g,"unlocked"],[/débloquée/g,"unlocked"]
     ];
     rules.forEach(([pattern,replacement])=>out=out.replace(pattern,replacement));
-    return out.replace(/\s+([!?])/g,"$1");
+    return out.replace(/\s+([:!?])/g,"$1");
   };
   function english(value){
     if(typeof value!=="string")return value;
