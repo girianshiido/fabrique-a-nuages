@@ -923,6 +923,7 @@ Synchronisation…|Synchronising…
     [/^(.+) achevé : relique obtenue$/,"$1 completed: relic acquired"],
     [/^(.+) inscrite dans la Constellation$/,"$1 recorded in the Constellation"],
     [/^(.+) découvert$/,"$1 discovered"],
+    [/^\+(.+) % de production permanente$/,"+$1% permanent production"],
     [/^Bonus actif : (.+)$/,"Active bonus: $1"],[/^Limite (.+) h$/,"Limit $1 h"],
     [/^(.+) accomplis$/,"$1 completed"],[/^Prochaine Élévation$/,"Next Elevation"],[/^Prochain Sol$/,"Next Sol"],[/^Prochain cycle$/,"Next cycle"],
     [/^(.+) disponible(s?)$/,"$1 available"],[/^(.+) dépensée(s?)$/,"$1 spent"],
