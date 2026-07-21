@@ -38,6 +38,7 @@ const cases = [
   ["Nouveau contrat : Impulsion héliostatique", "New contract: Heliostatic impulse"],
   ["Expédition : Déluge sulfurique", "Expedition: Sulfur deluge"],
   ["Succès : Gardien d’Ishtar", "Achievement: Keeper of Ishtar"],
+  ["Architecte", "Architect"],
   ["Écope à acide découvert", "Acid scoop discovered"],
   ["+30 % de production permanente", "+30% permanent production"],
   ["Surcadence active : production ×25, corrosion +8 %/s.", "Overdrive active: ×25 production, corrosion +8%/s."],

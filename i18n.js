@@ -207,6 +207,7 @@ Bâtisseur de dômes|Dome builder
 Navigateur de Phobos|Phobos navigator
 Maître de la corrosion|Corrosion master
 Architecte des strates|Strata architect
+Architecte|Architect
 Navigateur du crépuscule|Twilight navigator
 Havre d’Ishtar|Ishtar Haven
 Ancrage d’Aphrodite|Aphrodite Anchor
