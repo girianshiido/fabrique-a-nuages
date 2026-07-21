@@ -12,7 +12,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=20">
+    <link rel="stylesheet" href="styles.css?v=21">
 </head>
 <body data-sky="0">
   <div class="world" aria-hidden="true">
@@ -31,6 +31,13 @@
         <button class="mini-resource dawn-resource" id="dawnTreeButton" type="button" aria-label="Ouvrir l'arbre des Aubes"><span>◈</span><p><small>Aubes disponibles</small><b id="dawnCount">0</b></p></button>
       </div>
       <div class="header-actions">
+        <div class="language-picker">
+          <button class="icon-button language-button" id="languageButton" type="button" aria-label="Choisir la langue" aria-expanded="false">🇫🇷</button>
+          <div class="language-menu" id="languageMenu" hidden>
+            <button type="button" data-language="fr"><span>🇫🇷</span> Français</button>
+            <button type="button" data-language="en"><span>🇬🇧</span> English</button>
+          </div>
+        </div>
         <span class="time-status" id="timeStatus" title="Source de l’heure"><i></i><span>Synchronisation…</span></span>
         <button class="icon-button" id="soundButton" type="button" aria-label="Désactiver les sons" aria-pressed="true">♪</button>
         <button class="icon-button" id="helpButton" type="button" aria-label="Afficher l’aide">?</button>
@@ -66,7 +73,7 @@
         <section class="venus-systems" id="venusSystems" hidden>
           <div class="venus-system-head"><span><small>Système vénusien</small><strong>Surcadence ×25</strong></span><button id="overdriveButton" type="button">Activer</button></div>
           <div class="corrosion-copy"><span>Corrosion</span><b id="corrosionLabel">0 %</b></div>
-          <div class="corrosion-bar"><i id="corrosionFill"></i></div>
+          <div class="corrosion-bar" id="corrosionBar" role="progressbar" aria-label="Corrosion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="corrosionFill"></i></div>
           <small id="overdriveHint">Produit 25× plus vite, mais la corrosion monte rapidement.</small>
           <div class="venus-construction-head"><span>Grands chantiers</span><b id="venusConstructionProgress">0 / 4</b></div>
           <div class="venus-construction-list" id="venusConstructionList"></div>
@@ -169,6 +176,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="achievement" id="achievement" role="status" aria-live="polite" hidden><span>✦</span><div><small>Nouveau palier</small><b></b></div></div>
-    <script src="app.js?v=20"></script>
+    <script src="i18n.js?v=21"></script>
+    <script src="app.js?v=21"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {
-  "name": "La Fabrique à Nuages",
-  "short_name": "Fabrique à Nuages",
-  "description": "Un jeu incrémental météorologique.",
+  "name": "La Fabrique à Nuages / The Cloudworks",
+  "short_name": "The Cloudworks",
+  "description": "Jeu incrémental météorologique / Weather incremental game.",
   "lang": "fr-FR",
   "start_url": "./",
   "scope": "./",

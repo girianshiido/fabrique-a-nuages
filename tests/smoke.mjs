@@ -183,6 +183,8 @@ assert.equal(venusOverdriveMultiplier(),25,"La surcadence vénusienne doit multi
 assert.equal(state.stats.overdrives,1,"Chaque activation de surcadence doit être recensée");
 state.venusCorrosion=99;updateVenusSystems(1);
 assert.equal(state.venusOverdrive,false,"Une corrosion critique doit couper la surcadence");
+assert.ok(state.venusCooldownUntil-now()>=44999,"Une corrosion critique doit verrouiller la surcadence pendant 45 secondes");
+assert.equal(initialState().settings.language,"fr","Les nouvelles sauvegardes doivent démarrer en français");
 state.venusCooldownUntil=0;state.venusCorrosion=0;state.drops=venusMegaprojects[0].cost;startVenusConstruction("ishtar_haven");
 assert.equal(state.venusBuild.id,"ishtar_haven","Le Havre d’Ishtar doit lancer un chantier persistant");
 state.venusBuild.completesAt=now();finishVenusConstruction();
