@@ -539,6 +539,12 @@ Super-rotation|Super-rotation
 Haute atmosphère|Upper atmosphere
 Soleil apprivoisé|Tamed sun
 Cent mille aérostats|One hundred thousand aerostats
+Une Aube t’attend|A Dawn awaits you
+Un Sol t’attend|A Sol awaits you
+Une Élévation t’attend|An Elevation awaits you
+Gagner une Aube et choisir une nouvelle voie|Earn a Dawn and choose a new path
+Gagner un Sol et choisir une nouvelle voie|Earn a Sol and choose a new path
+Gagner une Élévation et choisir une nouvelle voie|Earn an Elevation and choose a new path
 Titan d’Ishtar éveillé|Ishtar titan awakened
 Empire atmosphérique|Atmospheric empire
 Œil de Vénus|Eye of Venus
@@ -903,6 +909,7 @@ Synchronisation…|Synchronising…
     [/^\+ (.+) technologies encore inconnues$/,"+ $1 technologies still unknown"],
     [/^Réussites : (.+) · \+(.+) % production$/,"Successes: $1 · +$2% production"],
     [/^Réserve : (.+) · (.+) s\. Il faudra aussi (.+) (.+)\.$/,"Reserve: $1 · $2 s. You must also complete $3 $4."],
+    [/^(.+) \/ 100 k aérostats vénusiens déployés sur l’ensemble des Élévations\.$/,"$1 / 100 k Venusian aerostats deployed across all Elevations."],
     [/^Jalon accompli : (.+)$/,"Milestone achieved: $1"],
     [/^(Le phénomène-boss|La tempête-boss) s’est dissipé(?:e)?\. Prépare une nouvelle tentative\.$/,"$1 has dissipated. Prepare a new attempt."],
     [/^Phase (.+) : la tempête se renforce !$/,"Phase $1: the storm intensifies!"],

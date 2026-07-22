@@ -176,6 +176,8 @@ assert.equal(state.planet,"venus","La conclusion martienne doit révéler Vénus
 assert.equal(units.length,32,"Vénus doit proposer 32 nouvelles machines flottantes");
 assert.equal(MILESTONES.length,20,"Les machines vénusiennes doivent avoir vingt paliers");
 assert.equal(expeditionChapters.length,16,"L’Ascension de Vénus doit contenir seize jalons");
+state.expedition=venusExpeditionChapters.slice(0,11).map(chapter=>chapter.id);state.venusUnitsBuilt=42000;renderExpedition();
+assert.match(els.bossCard.innerHTML,/42[,.]0 k \\/ 100 k aérostats vénusiens déployés/,"Le défi des cent mille aérostats doit afficher le compteur cumulatif");
 state.dawnUpgrades=["born_ready"];
 assert.equal(starterGrant(),5e12,"Une Élévation équipée doit commencer avec 5 Bn lumens");
 state.dawnUpgrades=[];state.venusCorrosion=0;toggleVenusOverdrive();
