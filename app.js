@@ -563,7 +563,11 @@ function contractDuration(template,target){return template.metric==="clicks"?Mat
 function contractRecoveryLevel(id){return Math.max(0,Number(state.contractRecovery?.[id])||0)}
 function nextContractTemplate(){
   const start=state.stats.contractsCompleted%contractTemplates.length,blocked=state.lastFailedContractId;
-  return contractTemplates.find((_,offset)=>contractTemplates[(start+offset)%contractTemplates.length].id!==blocked)||contractTemplates[start];
+  for(let offset=0;offset<contractTemplates.length;offset++){
+    const candidate=contractTemplates[(start+offset)%contractTemplates.length];
+    if(candidate.id!==blocked)return candidate;
+  }
+  return contractTemplates[start];
 }
 function makeContract(){
   const template=nextContractTemplate(),recovery=contractRecoveryLevel(template.id)>0,tier=Math.max(0,state.stats.contractsCompleted-(recovery?contractTemplates.length:0)),target=contractTarget(template,tier);

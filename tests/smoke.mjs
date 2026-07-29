@@ -71,6 +71,13 @@ assert.equal(state.contract.id,"clicks","Le type raté doit pouvoir revenir apr�
 assert.equal(state.contract.recovery,true,"Le retour du type raté doit être identifié comme une reprise");
 assert.equal(state.contract.target,contractTarget(contractTemplates[0],6),"La reprise doit revenir au palier précédent du même contrat");
 assert.equal(contractReward(),Math.max(150,stableProduction()*60*10)*.7,"La reprise doit offrir une récompense réduite");
+state=initialState();initialized=true;state.stats.contractsCompleted=2;state.lastFailedContractId="units";state.contractRecovery.units=1;
+makeContract();
+assert.equal(state.contract.id,"clicks","Après un échec des aérostats, une impulsion peut être proposée");
+state.contract.expiresAt=now()-1;updateContract();makeContract();
+assert.notEqual(state.contract.id,"clicks","Après l’échec de l’impulsion, elle ne doit pas être proposée à nouveau");
+assert.equal(state.contract.id,"units","La traversée des aérostats peut revenir allégée après une impulsion ratée");
+assert.equal(state.contract.recovery,true,"Le retour de la traversée des aérostats doit utiliser son palier allégé");
 state.currentPath="storm";
 state.activeEvent={id:"golden",spawnedAt:0,expiresAt:Date.now()+60000,boostUntil:0};
 claimEvent();
