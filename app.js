@@ -855,6 +855,10 @@ els.languageButton.addEventListener("click",()=>{els.languageMenu.hidden=!els.la
 els.languageMenu.addEventListener("click",event=>{const button=event.target.closest("[data-language]");if(!button)return;els.languageMenu.hidden=true;setLanguage(button.dataset.language)});
 document.addEventListener("click",event=>{if(!event.target.closest(".language-picker")&&!els.languageMenu.hidden){els.languageMenu.hidden=true;refreshLanguagePicker()}});
 document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!els.languageMenu.hidden){els.languageMenu.hidden=true;refreshLanguagePicker()}});
+document.addEventListener("selectstart",event=>event.preventDefault());
+document.addEventListener("dblclick",event=>event.preventDefault(),{passive:false});
+["gesturestart","gesturechange","gestureend"].forEach(type=>document.addEventListener(type,event=>event.preventDefault(),{passive:false}));
+document.addEventListener("touchmove",event=>{if(event.touches.length>1)event.preventDefault()},{passive:false});
 $("#newGamePlusButton").addEventListener("click",beginNewGamePlus);
 els.sound.addEventListener("click",()=>{state.sound=!state.sound;els.sound.setAttribute("aria-pressed",state.sound);els.sound.textContent=state.sound?"♪":"×";els.sound.setAttribute("aria-label",state.sound?"Désactiver les sons":"Activer les sons");save()});
 $("#helpButton").addEventListener("click",()=>els.help.showModal());
