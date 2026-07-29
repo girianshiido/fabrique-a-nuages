@@ -33,7 +33,15 @@ Armada d’Aphrodite|Aphrodite Armada
 Assemble les derniers aérostats civils sans attendre une nouvelle Élévation.|Assemble the last civil aerostats without waiting for a new Elevation.
 Lancer l’Armada|Launch the Armada
 Armada achevée|Armada completed
+100 k / 100 k aérostats|100k / 100k aerostats
 Les cent mille aérostats civils ont rejoint les cités du crépuscule.|One hundred thousand civil aerostats have joined the twilight cities.
+Stabilisation d’armada|Armada stabilization
+Surcadence maîtrisée — stabilisation de l’Armada enregistrée !|Overdrive mastered — Armada stabilization recorded!
+Couronne requise|Crown required
+Les Élévations sont stabilisées jusqu’à la Couronne de Lucifer|Elevations are locked until Lucifer Crown
+Les cités ont atteint leur cinquième strate. Construis la Couronne de Lucifer avant de déclencher une nouvelle Élévation.|The cities have reached their fifth stratum. Build Lucifer Crown before triggering another Elevation.
+Couronne de Lucifer requise|Lucifer Crown required
+Distillation maximale|Maximum distillation
 Progression hors ligne à 50 %.|50% progress while offline.
 L’Armada d’Aphrodite se révèle à 90 k aérostats.|Aphrodite Armada unlocks at 90k aerostats.
 L’Armada assemble les derniers aérostats civils.|The Armada is assembling the last civil aerostats.
@@ -960,6 +968,10 @@ Synchronisation…|Synchronising…
     [/^Effectue (.+) captations manuelles avant la fin( · Objectif assoupli après échec)?$/,"Perform $1 manual captures before time runs out$2"],
     [/^Capture (.+) lumens avant la fin( · Objectif assoupli après échec)?$/,"Capture $1 lumens before time runs out$2"],
     [/^Déploie (.+) machines flottantes avant la fin( · Objectif assoupli après échec)?$/,"Deploy $1 floating machines before time runs out$2"],
+    [/^Maîtrise (.+) surcadences avant la fin( · Objectif assoupli après échec)?$/,"Master $1 overdrives before time runs out$2"],
+    [/^Réseau logistique actif : production permanente ×(.+)\. Distillation de Maxwell : production ×(.+), doublée toutes les 10 minutes de jeu actif\.$/,"Logistics network active: ×$1 permanent production. Maxwell Distillation: ×$2 production, doubled every 10 minutes of active play."],
+    [/^Prochaine alchimie · (.+)$/,"Next alchemy · $1"],
+    [/^Distillation de Maxwell (.+) — production ×(.+) !$/,"Maxwell Distillation $1 — ×$2 production!"],
     [/^Effectue (.+) extractions manuelles avant la fin( · Objectif assoupli après échec)?$/,"Perform $1 manual extractions before time runs out$2"],
     [/^Extrais (.+) grains avant la fin( · Objectif assoupli après échec)?$/,"Extract $1 grains before time runs out$2"],
     [/^Déploie (.+) machines avant la fin( · Objectif assoupli après échec)?$/,"Deploy $1 machines before time runs out$2"],
