@@ -12,7 +12,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="styles.css?v=22">
+    <link rel="stylesheet" href="styles.css?v=23">
 </head>
 <body data-sky="0">
   <div class="world" aria-hidden="true">
@@ -77,6 +77,13 @@
           <small id="overdriveHint">Produit 25× plus vite, mais la corrosion monte rapidement.</small>
           <div class="venus-construction-head"><span>Grands chantiers</span><b id="venusConstructionProgress">0 / 4</b></div>
           <div class="venus-construction-list" id="venusConstructionList"></div>
+          <div class="venus-armada" id="venusArmada" hidden>
+            <div class="venus-armada-head"><span>♾️</span><span><small>Chantier de rattrapage</small><strong>Armada d’Aphrodite</strong></span><b id="venusArmadaStatus">90 k</b></div>
+            <p id="venusArmadaDescription">Assemble les derniers aérostats civils sans attendre une nouvelle Élévation.</p>
+            <div class="venus-armada-bar"><i id="venusArmadaFill"></i></div>
+            <div class="venus-armada-meta"><span id="venusArmadaCount">90 k / 100 k aérostats</span><b id="venusArmadaEta">10 min</b></div>
+            <button id="venusArmadaButton" type="button">Lancer l’Armada</button>
+          </div>
         </section>
         <div class="stats">
           <div><span>Cette ère</span><b id="runDrops">0</b></div>
@@ -176,7 +183,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <div class="achievement" id="achievement" role="status" aria-live="polite" hidden><span>✦</span><div><small>Nouveau palier</small><b></b></div></div>
-    <script src="i18n.js?v=29"></script>
-    <script src="app.js?v=29"></script>
+    <script src="i18n.js?v=30"></script>
+    <script src="app.js?v=30"></script>
 </body>
 </html>

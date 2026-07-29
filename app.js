@@ -10,6 +10,10 @@ const COLOSSUS_CAP_TAX = 850;
 const PIONEER_SUPER_POWER = 7777777;
 const BOSS_DURATION = 90;
 const BOSS_ACTION_BUFFER = 15;
+const VENUS_ARMADA_UNLOCK = 90000;
+const VENUS_ARMADA_GOAL = 100000;
+const VENUS_ARMADA_DURATION = 600;
+const VENUS_ARMADA_SAFE_BOOST = 15;
 const EARTH_MILESTONES = [1,5,10,25,50,75,100,150,200,300,400,500,750,1000,1500,2500];
 const EARTH_MILESTONE_NAMES = ["Premier souffle","Équipe complète","Rythme de croisière","Quart de cent","Essaim coordonné","Haute cadence","Cap du cent","Mécanique céleste","Double centaine","Production orbitale","Climat industriel","Grand cycle","Maîtrise des flux","Cap du millier","Horizon absolu","Transcendance"];
 const MARS_MILESTONES = [1,5,10,25,50,75,100,150,200,300,400,500,750,1000,1500,2500,5000,10000,25000,50000];
@@ -299,7 +303,7 @@ const achievements = [
 function configurePlanet(planet){const venus=planet==="venus",mars=planet==="mars";units=venus?venusUnits:mars?marsUnits:earthUnits;MILESTONES=venus?VENUS_MILESTONES:mars?MARS_MILESTONES:EARTH_MILESTONES;MILESTONE_NAMES=venus?VENUS_MILESTONE_NAMES:mars?MARS_MILESTONE_NAMES:EARTH_MILESTONE_NAMES;expeditionChapters=venus?venusExpeditionChapters:mars?marsExpeditionChapters:earthExpeditionChapters}
 const initialOwned = (planet="earth") => Object.fromEntries((planet==="venus"?venusUnits:planet==="mars"?marsUnits:earthUnits).map(u=>[u.id,0]));
 const initialState = (planet="earth") => ({
-  planet,marsUnlocked:planet!=="earth",venusUnlocked:planet==="venus",earthLegacy:null,marsLegacy:null,economyVersion:ECONOMY_VERSION,marsUnitsBuilt:0,venusUnitsBuilt:0,venusOverdrive:false,venusCorrosion:0,venusCooldownUntil:0,venusConstructions:[],venusBuild:null,drops:0,runTotal:0,planetTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(planet),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],currentPath:null,pendingPath:null,pathUpgrades:[],projects:[],relics:{storm:0,engineer:0,chrono:0},expedition:[],activeBoss:null,contractRecovery:{},contractCursor:0,finalBuilt:false,unlockedAchievements:[],newGamePlus:0,settings:{effects:true,language:"fr"},
+  planet,marsUnlocked:planet!=="earth",venusUnlocked:planet==="venus",earthLegacy:null,marsLegacy:null,economyVersion:ECONOMY_VERSION,marsUnitsBuilt:0,venusUnitsBuilt:0,venusOverdrive:false,venusCorrosion:0,venusCooldownUntil:0,venusOverdriveStartCorrosion:0,venusOverdrivePeak:0,venusConstructions:[],venusBuild:null,venusArmada:null,drops:0,runTotal:0,planetTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(planet),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],currentPath:null,pendingPath:null,pathUpgrades:[],projects:[],relics:{storm:0,engineer:0,chrono:0},expedition:[],activeBoss:null,contractRecovery:{},contractCursor:0,finalBuilt:false,unlockedAchievements:[],newGamePlus:0,settings:{effects:true,language:"fr"},
   activeEvent:null,nextEventAt:Date.now()+60000,contract:null,nextContractAt:Date.now()+6000,
   buyMode:"1",sound:true,startedAt:Date.now(),runStartedAt:Date.now(),lastTick:Date.now(),savedAt:Date.now(),
   stats:{clicks:0,unitsBought:0,upgradesBought:0,bestPps:0,offlineEarned:0,contractsCompleted:0,contractsFailed:0,eventsCaptured:0,overdrives:0}
@@ -322,8 +326,14 @@ const els = {
   help:$("#helpDialog"),prestige:$("#prestigeDialog"),prestigeButton:$("#prestigeButton"),prestigeTitle:$("#prestigeTitle"),prestigeProgress:$("#prestigeProgress"),
   prestigeDescription:$("#prestigeDescription"),prestigeReward:$("#prestigeReward"),nextCycleInfo:$("#nextCycleInfo"),timeStatus:$("#timeStatus"),pathPicker:$("#pathPicker"),pathHeading:$("#pathHeading"),pathTagline:$("#pathTagline"),pathOverview:$("#pathOverview"),pathTechCount:$("#pathTechCount"),pathTechList:$("#pathTechList"),projectList:$("#projectList"),relicCount:$("#relicCount"),relicDescription:$("#relicDescription"),strategyBadge:$("#strategyBadge"),expeditionProgress:$("#expeditionProgress"),expeditionTrack:$("#expeditionTrack"),bossCard:$("#bossCard"),finalProject:$("#finalProject"),achievementCount:$("#achievementCount"),achievementList:$("#achievementList"),finale:$("#finaleDialog"),newGamePlusLevel:$("#newGamePlusLevel")
   ,dawnDialog:$("#dawnDialog"),dawnBalance:$("#dawnBalance"),dawnSpent:$("#dawnSpent"),dawnTree:$("#dawnTree"),eventBanner:$("#eventBanner"),eventIcon:$("#eventIcon"),eventTitle:$("#eventTitle"),eventDescription:$("#eventDescription"),eventTimer:$("#eventTimer"),contractCard:$("#contractCard"),contractTimer:$("#contractTimer"),contractTitle:$("#contractTitle"),contractDescription:$("#contractDescription"),contractFill:$("#contractFill"),contractReward:$("#contractReward")
-  ,venusSystems:$("#venusSystems"),overdriveButton:$("#overdriveButton"),corrosionLabel:$("#corrosionLabel"),corrosionBar:$("#corrosionBar"),corrosionFill:$("#corrosionFill"),overdriveHint:$("#overdriveHint"),venusConstructionProgress:$("#venusConstructionProgress"),venusConstructionList:$("#venusConstructionList"),languageButton:$("#languageButton"),languageMenu:$("#languageMenu")
+  ,venusSystems:$("#venusSystems"),overdriveButton:$("#overdriveButton"),corrosionLabel:$("#corrosionLabel"),corrosionBar:$("#corrosionBar"),corrosionFill:$("#corrosionFill"),overdriveHint:$("#overdriveHint"),venusConstructionProgress:$("#venusConstructionProgress"),venusConstructionList:$("#venusConstructionList"),venusArmada:$("#venusArmada"),venusArmadaStatus:$("#venusArmadaStatus"),venusArmadaDescription:$("#venusArmadaDescription"),venusArmadaFill:$("#venusArmadaFill"),venusArmadaCount:$("#venusArmadaCount"),venusArmadaEta:$("#venusArmadaEta"),venusArmadaButton:$("#venusArmadaButton"),languageButton:$("#languageButton"),languageMenu:$("#languageMenu")
 };
+
+function normalizeVenusArmada(armada){
+  if(!armada||typeof armada!=="object")return null;
+  const duration=Math.max(1,Number(armada.duration)||VENUS_ARMADA_DURATION);
+  return{target:Math.max(0,Math.floor(Number(armada.target)||0)),built:Math.max(0,Math.floor(Number(armada.built)||0)),work:Math.max(0,Math.min(duration,Number(armada.work)||0)),duration,startedAt:Number(armada.startedAt)||Date.now(),updatedAt:Number(armada.updatedAt)||Date.now(),completed:Boolean(armada.completed),completedAt:Number(armada.completedAt)||0,safeBoosts:Math.max(0,Math.floor(Number(armada.safeBoosts)||0))};
+}
 
 function load(){
   try{
@@ -342,7 +352,7 @@ function load(){
     const contractCursor=Number.isFinite(Number(saved.contractCursor))?Math.max(0,Math.floor(Number(saved.contractCursor)))%contractTemplates.length:legacyContractCursor;
     const legacyMarsUnits=planet==="mars"?Object.values({...fresh.owned,...saved.owned}).reduce((sum,count)=>sum+(Number(count)||0),0):0;
     const legacyVenusUnits=planet==="venus"?Object.values({...fresh.owned,...saved.owned}).reduce((sum,count)=>sum+(Number(count)||0),0):0;
-    return {...fresh,...saved,planet,economyVersion:Number(saved.economyVersion)||1,marsUnitsBuilt:Number(saved.marsUnitsBuilt)||legacyMarsUnits,venusUnitsBuilt:Number(saved.venusUnitsBuilt)||legacyVenusUnits,venusCorrosion:Math.max(0,Math.min(100,Number(saved.venusCorrosion)||0)),venusConstructions:Array.isArray(saved.venusConstructions)?saved.venusConstructions:[],venusBuild:saved.venusBuild&&typeof saved.venusBuild==="object"?saved.venusBuild:null,planetTotal:saved.planetTotal??(planet==="earth"?(saved.lifetime??legacyTotal):saved.runTotal??0),runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:savedStats,cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[],currentPath:paths.some(path=>path.id===saved.currentPath)?saved.currentPath:null,pendingPath:null,pathUpgrades:Array.isArray(saved.pathUpgrades)?saved.pathUpgrades:[],projects:Array.isArray(saved.projects)?saved.projects:[],relics:{...fresh.relics,...saved.relics},expedition:Array.isArray(saved.expedition)?saved.expedition:[],activeBoss:normalizeBoss(saved.activeBoss),contractRecovery:saved.contractRecovery&&typeof saved.contractRecovery==="object"?saved.contractRecovery:{},contractCursor,lastFailedContractId:null,unlockedAchievements:Array.isArray(saved.unlockedAchievements)?saved.unlockedAchievements:[],newGamePlus:Number(saved.newGamePlus)||0,settings:{...fresh.settings,...saved.settings},buyMode:buyModes.includes(saved.buyMode)?saved.buyMode:fresh.buyMode};
+    return {...fresh,...saved,planet,economyVersion:Number(saved.economyVersion)||1,marsUnitsBuilt:Number(saved.marsUnitsBuilt)||legacyMarsUnits,venusUnitsBuilt:Number(saved.venusUnitsBuilt)||legacyVenusUnits,venusCorrosion:Math.max(0,Math.min(100,Number(saved.venusCorrosion)||0)),venusOverdriveStartCorrosion:0,venusOverdrivePeak:0,venusConstructions:Array.isArray(saved.venusConstructions)?saved.venusConstructions:[],venusBuild:saved.venusBuild&&typeof saved.venusBuild==="object"?saved.venusBuild:null,venusArmada:normalizeVenusArmada(saved.venusArmada),planetTotal:saved.planetTotal??(planet==="earth"?(saved.lifetime??legacyTotal):saved.runTotal??0),runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:savedStats,cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[],currentPath:paths.some(path=>path.id===saved.currentPath)?saved.currentPath:null,pendingPath:null,pathUpgrades:Array.isArray(saved.pathUpgrades)?saved.pathUpgrades:[],projects:Array.isArray(saved.projects)?saved.projects:[],relics:{...fresh.relics,...saved.relics},expedition:Array.isArray(saved.expedition)?saved.expedition:[],activeBoss:normalizeBoss(saved.activeBoss),contractRecovery:saved.contractRecovery&&typeof saved.contractRecovery==="object"?saved.contractRecovery:{},contractCursor,lastFailedContractId:null,unlockedAchievements:Array.isArray(saved.unlockedAchievements)?saved.unlockedAchievements:[],newGamePlus:Number(saved.newGamePlus)||0,settings:{...fresh.settings,...saved.settings},buyMode:buyModes.includes(saved.buyMode)?saved.buyMode:fresh.buyMode};
   }catch{return initialState()}
 }
 function now(){return Date.now()+clockOffset}
@@ -358,7 +368,7 @@ async function synchronizeAndRestore(){
   }catch{clockOffset=0;networkNow=Date.now()}finally{clearTimeout(timeout)}
   rebalanceLegacyEconomy();
   const elapsed=Math.min(offlineHours()*3600,Math.max(0,(networkNow-(state.savedAt||networkNow))/1000));
-  if(isVenus()){state.venusOverdrive=false;state.venusCorrosion=Math.max(0,state.venusCorrosion-elapsed*4);finishVenusConstruction(networkNow)}
+  if(isVenus()){state.venusOverdrive=false;state.venusCorrosion=Math.max(0,state.venusCorrosion-elapsed*4);finishVenusConstruction(networkNow);advanceVenusArmadaTo(networkNow,.5)}
   const earned=baseProduction()*offlineMultiplier()*elapsed;
   addDrops(earned);state.stats.offlineEarned+=earned;state.lastTick=networkNow;initialized=true;
   els.timeStatus.className=`time-status ${source}`;els.timeStatus.querySelector("span").textContent=source==="online"?"Heure réseau":"Heure locale";
@@ -461,15 +471,50 @@ function startVenusConstruction(id){
   if(!project||state.venusConstructions.includes(id)||index!==state.venusConstructions.length||state.drops<project.cost)return;
   state.drops-=project.cost;state.venusBuild={id,startedAt:now(),completesAt:now()+project.duration*1000};achievement(`Chantier lancé : ${project.name}`);render(true);save();
 }
+function venusArmadaUnlocked(){return isVenus()&&state.venusUnitsBuilt>=VENUS_ARMADA_UNLOCK}
+function venusArmadaActive(){return Boolean(state.venusArmada&&!state.venusArmada.completed&&state.venusUnitsBuilt<VENUS_ARMADA_GOAL)}
+function venusArmadaCost(){return Math.max(1e18,stableProduction()*300)}
+function finishVenusArmada(at=now()){
+  const armada=state.venusArmada;if(!armada||armada.completed||state.venusUnitsBuilt<VENUS_ARMADA_GOAL&&armada.work<armada.duration)return false;
+  const missing=Math.max(0,VENUS_ARMADA_GOAL-state.venusUnitsBuilt);state.venusUnitsBuilt+=missing;armada.built+=missing;armada.work=armada.duration;armada.updatedAt=at;armada.completed=true;armada.completedAt=at;
+  if(initialized){achievement("Armada d’Aphrodite achevée");toast("Cent mille aérostats — l’Armada rejoint les cités !");playTone(880,.28)}
+  return true;
+}
+function applyVenusArmadaWork(seconds,at=now()){
+  const armada=state.venusArmada;if(!venusArmadaActive()||seconds<=0)return false;
+  armada.work=Math.min(armada.duration,armada.work+seconds);
+  const planned=Math.floor(armada.target*armada.work/armada.duration),grant=Math.min(Math.max(0,planned-armada.built),Math.max(0,VENUS_ARMADA_GOAL-state.venusUnitsBuilt));
+  if(grant>0){state.venusUnitsBuilt+=grant;armada.built+=grant}
+  return finishVenusArmada(at)||grant>0;
+}
+function advanceVenusArmadaTo(at=now(),rate=1){
+  const armada=state.venusArmada;if(!venusArmadaActive())return finishVenusArmada(at);
+  const elapsed=Math.max(0,(at-armada.updatedAt)/1000);armada.updatedAt=at;
+  return applyVenusArmadaWork(elapsed*Math.max(0,rate),at);
+}
+function startVenusArmada(){
+  if(!initialized||!venusArmadaUnlocked()||state.venusUnitsBuilt>=VENUS_ARMADA_GOAL||state.venusArmada)return;
+  const cost=venusArmadaCost();if(state.drops<cost)return;
+  const current=now();state.drops-=cost;state.venusArmada={target:VENUS_ARMADA_GOAL-state.venusUnitsBuilt,built:0,work:0,duration:VENUS_ARMADA_DURATION,startedAt:current,updatedAt:current,completed:false,completedAt:0,safeBoosts:0};
+  achievement("Chantier lancé : Armada d’Aphrodite");toast("L’Armada assemble les derniers aérostats civils.");playTone(700,.2);render(true);save();
+}
+function boostVenusArmada(){
+  if(!venusArmadaActive())return false;
+  advanceVenusArmadaTo();state.venusArmada.safeBoosts++;applyVenusArmadaWork(VENUS_ARMADA_SAFE_BOOST);return true;
+}
 function toggleVenusOverdrive(){
   if(!initialized||!isVenus())return;const cooling=state.venusCooldownUntil>now();if(cooling&&!state.venusOverdrive)return;
-  if(state.venusOverdrive){state.venusOverdrive=false;toast("Surcadence suspendue — refroidissement des aérostats.")}
-  else{state.venusOverdrive=true;state.stats.overdrives++;recordBossAction("overdrive");toast("SURCADENCE ×25 — surveille la corrosion !");playTone(920,.18)}
+  if(state.venusOverdrive){
+    const safeRun=state.venusOverdriveStartCorrosion<=10&&state.venusOverdrivePeak>=60&&state.venusCorrosion<100;state.venusOverdrive=false;
+    if(safeRun&&boostVenusArmada()){if(!state.venusArmada.completed)toast(`Surcadence maîtrisée — Armada accélérée de ${VENUS_ARMADA_SAFE_BOOST} s !`)}
+    else toast("Surcadence suspendue — refroidissement des aérostats.");
+  }
+  else{state.venusOverdrive=true;state.venusOverdriveStartCorrosion=state.venusCorrosion;state.venusOverdrivePeak=state.venusCorrosion;state.stats.overdrives++;recordBossAction("overdrive");toast("SURCADENCE ×25 — surveille la corrosion !");playTone(920,.18)}
   render(true);save();
 }
 function updateVenusSystems(delta){
-  if(!isVenus())return;finishVenusConstruction();
-  if(state.venusOverdrive){state.venusCorrosion=Math.min(100,state.venusCorrosion+8*delta);if(state.venusCorrosion>=100){state.venusOverdrive=false;state.venusCooldownUntil=now()+45000;toast("Corrosion critique — surcadence verrouillée 45 secondes !");playTone(180,.3)}}
+  if(!isVenus())return;finishVenusConstruction();advanceVenusArmadaTo();
+  if(state.venusOverdrive){state.venusCorrosion=Math.min(100,state.venusCorrosion+8*delta);state.venusOverdrivePeak=Math.max(state.venusOverdrivePeak,state.venusCorrosion);if(state.venusCorrosion>=100){state.venusOverdrive=false;state.venusCooldownUntil=now()+45000;toast("Corrosion critique — surcadence verrouillée 45 secondes !");playTone(180,.3)}}
   else state.venusCorrosion=Math.max(0,state.venusCorrosion-4*delta);
 }
 
@@ -690,7 +735,7 @@ function landOnVenus(){
   state={...initialState("venus"),marsUnlocked:true,venusUnlocked:true,earthLegacy:old.earthLegacy,marsLegacy,lifetime:old.lifetime,startedAt:old.startedAt,sound:old.sound,buyMode:old.buyMode,settings:old.settings,unlockedAchievements:old.unlockedAchievements};initialized=true;els.finale.close();applyPlanetTheme();applySettings();document.body.classList.add("venus-arrival");setTimeout(()=>document.body.classList.remove("venus-arrival"),3800);toast("VÉNUS — STRATE 1 : les premiers aérostats s’élèvent.");achievement("Nouvelle planète découverte : Vénus");lastUnlockedCount=0;render(true);save();
 }
 function beginNewGamePlus(){
-  if(!state.finalBuilt)return;if(state.planet==="earth"){landOnMars();return}if(isMars()){landOnVenus();return}const kept={planet:"venus",marsUnlocked:true,venusUnlocked:true,earthLegacy:state.earthLegacy,marsLegacy:state.marsLegacy,cycles:state.cycles,dawns:state.dawns,dawnSpent:state.dawnSpent,dawnUpgrades:state.dawnUpgrades,relics:state.relics,venusUnitsBuilt:state.venusUnitsBuilt,venusConstructions:state.venusConstructions,lifetime:state.lifetime,startedAt:state.startedAt,sound:state.sound,buyMode:state.buyMode,stats:state.stats,unlockedAchievements:state.unlockedAchievements,newGamePlus:state.newGamePlus+1,settings:state.settings};
+  if(!state.finalBuilt)return;if(state.planet==="earth"){landOnMars();return}if(isMars()){landOnVenus();return}const kept={planet:"venus",marsUnlocked:true,venusUnlocked:true,earthLegacy:state.earthLegacy,marsLegacy:state.marsLegacy,cycles:state.cycles,dawns:state.dawns,dawnSpent:state.dawnSpent,dawnUpgrades:state.dawnUpgrades,relics:state.relics,venusUnitsBuilt:state.venusUnitsBuilt,venusConstructions:state.venusConstructions,venusArmada:state.venusArmada,lifetime:state.lifetime,startedAt:state.startedAt,sound:state.sound,buyMode:state.buyMode,stats:state.stats,unlockedAchievements:state.unlockedAchievements,newGamePlus:state.newGamePlus+1,settings:state.settings};
   configurePlanet("venus");state={...initialState("venus"),...kept};initialized=true;els.finale.close();applyPlanetTheme();toast(`Nouvelle Vénus+ ${state.newGamePlus} : bonus permanent ×${format(newGamePlusMultiplier())}`);render(true);save();
 }
 function updateAchievements(){achievements.forEach(item=>{if(!state.unlockedAchievements.includes(item.id)&&item.check(state)){state.unlockedAchievements.push(item.id);achievement(`Succès : ${item.name}`)}})}
@@ -721,7 +766,7 @@ function openPrestige(){
   $("#confirmPrestige").disabled=!ready||!state.pendingPath;els.prestige.showModal();
 }
 function prestige(){
-  if(!canPrestige()||!state.pendingPath)return;const reward=prestigeReward(),planet=state.planet,kept={planet,marsUnlocked:state.marsUnlocked,venusUnlocked:state.venusUnlocked,earthLegacy:state.earthLegacy,marsLegacy:state.marsLegacy,marsUnitsBuilt:state.marsUnitsBuilt,venusUnitsBuilt:state.venusUnitsBuilt,venusConstructions:state.venusConstructions,venusBuild:state.venusBuild,cycles:state.cycles+1,dawns:state.dawns+reward,dawnSpent:state.dawnSpent,dawnUpgrades:state.dawnUpgrades,currentPath:state.pendingPath,relics:state.relics,lifetime:state.lifetime,planetTotal:state.planetTotal,startedAt:state.startedAt,sound:state.sound,stats:state.stats,buyMode:state.buyMode,newGamePlus:state.newGamePlus,unlockedAchievements:state.unlockedAchievements,settings:state.settings};
+  if(!canPrestige()||!state.pendingPath)return;const reward=prestigeReward(),planet=state.planet,kept={planet,marsUnlocked:state.marsUnlocked,venusUnlocked:state.venusUnlocked,earthLegacy:state.earthLegacy,marsLegacy:state.marsLegacy,marsUnitsBuilt:state.marsUnitsBuilt,venusUnitsBuilt:state.venusUnitsBuilt,venusConstructions:state.venusConstructions,venusBuild:state.venusBuild,venusArmada:state.venusArmada,cycles:state.cycles+1,dawns:state.dawns+reward,dawnSpent:state.dawnSpent,dawnUpgrades:state.dawnUpgrades,currentPath:state.pendingPath,relics:state.relics,lifetime:state.lifetime,planetTotal:state.planetTotal,startedAt:state.startedAt,sound:state.sound,stats:state.stats,buyMode:state.buyMode,newGamePlus:state.newGamePlus,unlockedAchievements:state.unlockedAchievements,settings:state.settings};
   configurePlanet(planet);state={...initialState(planet),...kept};const starter=starterGrant();state.drops=starter;state.runTotal=starter;state.planetTotal+=starter;state.lifetime+=starter;initialized=true;els.prestige.close();const currentCycle=cycleName();achievement(`${currentCycle} ${state.cycles} ${isMars()?"reçu":"reçue"} — +${reward} · ${format(dawnBalance())} disponible${dawnBalance()>1?"s":""}`);render(true);save();
 }
 function renderPathPicker(){
@@ -758,6 +803,13 @@ function renderVenusSystems(){
   els.overdriveHint.textContent=state.venusOverdrive?state.venusCorrosion>=95?"Danger critique : coupe la surcadence avant le verrouillage !":state.venusCorrosion>=80?"Alerte : la corrosion approche de la zone critique.":"Surcadence active : production ×25, corrosion +8 %/s.":cooling>0?"Refroidissement forcé des structures flottantes.":"Produit 25× plus vite pendant environ 12 secondes.";
   els.venusConstructionProgress.textContent=`${state.venusConstructions.length} / ${venusMegaprojects.length}`;
   els.venusConstructionList.innerHTML=venusMegaprojects.map((project,index)=>{const done=state.venusConstructions.includes(project.id),building=state.venusBuild?.id===project.id,unlocked=index<=state.venusConstructions.length,seconds=building?Math.max(0,(state.venusBuild.completesAt-now())/1000):0;return `<button type="button" class="venus-construction ${done?"done":""} ${building?"building":""}" data-venus-project="${project.id}" ${done||building||!unlocked||state.venusBuild||state.drops<project.cost?"disabled":""}><span>${done?"✓":project.icon}</span><span><strong>${project.name}</strong><small>${done?project.description:building?`Construction · ${formatTime(seconds)}`:!unlocked?"Strate précédente requise":`${format(project.cost)} lumens · ${formatTime(project.duration)}`}</small></span></button>`}).join("");
+  const armada=state.venusArmada,total=Math.min(VENUS_ARMADA_GOAL,state.venusUnitsBuilt),remaining=Math.max(0,VENUS_ARMADA_GOAL-state.venusUnitsBuilt),unlocked=venusArmadaUnlocked()||Boolean(armada)||state.venusUnitsBuilt>=VENUS_ARMADA_GOAL;
+  els.venusArmada.hidden=!unlocked;if(!unlocked)return;
+  const completed=state.venusUnitsBuilt>=VENUS_ARMADA_GOAL||armada?.completed,active=venusArmadaActive(),progress=completed?100:active?armada.work/armada.duration*100:Math.max(0,(total-VENUS_ARMADA_UNLOCK)/(VENUS_ARMADA_GOAL-VENUS_ARMADA_UNLOCK)*100),seconds=active?Math.max(0,armada.duration-armada.work):VENUS_ARMADA_DURATION,cost=venusArmadaCost();
+  els.venusArmada.classList.toggle("active",active);els.venusArmada.classList.toggle("done",completed);els.venusArmadaStatus.textContent=completed?"✓":active?`${progress.toFixed(0)} %`:"90 k";
+  els.venusArmadaFill.style.width=`${progress}%`;els.venusArmadaCount.textContent=completed?"100 k / 100 k aérostats":`${format(total)} / 100 k aérostats · ${format(remaining)} restants`;
+  els.venusArmadaDescription.textContent=completed?"Les cent mille aérostats civils ont rejoint les cités du crépuscule.":active?`Armada en construction · ${format(armada.built)} aérostats civils assemblés. Démarre sous 10 % de corrosion et coupe après 60 % : −${VENUS_ARMADA_SAFE_BOOST} s.`:`Coût : ${format(cost)} lumens · ${formatTime(VENUS_ARMADA_DURATION)}. Progression hors ligne à 50 %.`;
+  els.venusArmadaEta.textContent=completed?"Armada achevée":active?formatTime(seconds):formatTime(VENUS_ARMADA_DURATION);els.venusArmadaButton.hidden=completed;els.venusArmadaButton.disabled=active||state.drops<cost;els.venusArmadaButton.textContent=active?`Construction · ${formatTime(seconds)}`:"Lancer l’Armada";
 }
 function renderPrestigeTeaser(){
   const req=prestigeRequirement(),ready=canPrestige(),percent=Math.min(100,state.runTotal/req*100);
@@ -791,7 +843,7 @@ function renderExpedition(){
   if(!chapter){els.bossCard.innerHTML=`<strong>✦ ${isVenus()?"Ascension terminée":isMars()?"Conquête terminée":"Expédition terminée"}</strong><p>${isVenus()?"Le Trône du Crépuscule peut maintenant unir toutes les strates.":isMars()?"Le Réacteur d’Éden peut maintenant éveiller Mars.":"Le Climatologue du Multivers peut maintenant être construit."}</p>`}
   else if(chapter.boss){const boss=state.activeBoss,action=bossActions[chapter.bossType],actionTarget=bossActionTarget(chapter.bossType);if(boss){const phase=boss.phase||1,phaseHint=phase===1?"La tempête observe tes réserves.":phase===2?"Le front se resserre : la production automatique est réduite à 80 %.":"Œil du cyclone : la production automatique est réduite à 60 %.";els.bossCard.innerHTML=`<strong>${chapter.icon} ${chapter.name} · phase ${phase}/3</strong><p>${format(boss.progress)} / ${format(boss.target)} ${resourceName()} · ${Math.max(0,(boss.expiresAt-now())/1000).toFixed(0)} s</p><p>${action.icon} ${format(boss.actionProgress||0)} / ${format(boss.actionTarget)} ${action.label}</p><small>${phaseHint}</small>`}else els.bossCard.innerHTML=`<strong>${chapter.icon} ${isVenus()?"Cataclysme atmosphérique":isMars()?"Anomalie majeure":"Tempête-boss"} : ${chapter.name}</strong><p>Réserve : ${format(Math.max(1000,baseProduction()*chapter.goal))} ${resourceName()} · ${BOSS_DURATION} s. Il faudra aussi ${actionTarget} ${action.label}.</p><button type="button" data-start-boss="${chapter.id}">Affronter ${isVenus()?"le cataclysme":isMars()?"l’anomalie":"la tempête"}</button>`}
   else if(chapter.id==="mars_colony")els.bossCard.innerHTML=`<strong>Prochain jalon : ${chapter.name}</strong><p>${format(state.marsUnitsBuilt)} / 100 k machines martiennes déployées sur l’ensemble des Sols.</p>`;
-  else if(chapter.id==="venus_armada")els.bossCard.innerHTML=`<strong>Prochain jalon : ${chapter.name}</strong><p>${format(state.venusUnitsBuilt)} / 100 k aérostats vénusiens déployés sur l’ensemble des Élévations.</p>`;
+  else if(chapter.id==="venus_armada"){const armada=state.venusArmada,active=venusArmadaActive(),cost=venusArmadaCost(),seconds=active?Math.max(0,armada.duration-armada.work):VENUS_ARMADA_DURATION;els.bossCard.innerHTML=`<strong>Prochain jalon : ${chapter.name}</strong><p>${format(state.venusUnitsBuilt)} / 100 k aérostats vénusiens déployés sur l’ensemble des Élévations.</p>${active?`<small>Armada d’Aphrodite en construction · ${formatTime(seconds)}</small>`:venusArmadaUnlocked()?`<button type="button" data-start-armada ${state.drops<cost?"disabled":""}>Lancer l’Armada · ${format(cost)} ◆</button>`:`<small>L’Armada d’Aphrodite se révèle à 90 k aérostats.</small>`}`;}
   else els.bossCard.innerHTML=`<strong>Prochain jalon : ${chapter.name}</strong><p>${isVenus()?"Élève les cités et stabilise de nouvelles strates.":isMars()?"Développe la colonie pour poursuivre la conquête.":"Continue à développer la fabrique pour progresser dans l’Expédition."}</p>`;
   if(state.finalBuilt)els.finalProject.innerHTML=`<strong>${isVenus()?"👑 Empire du Crépuscule achevé":isMars()?"❤️ Cœur de Mars éveillé":"☀️ Climatologue du Multivers construit"}</strong><p>${isVenus()?"Toutes les strates de Vénus brillent ensemble.":isMars()?"La planète rouge respire enfin.":"Une transmission inconnue attend d’être déchiffrée."}</p><button type="button" data-open-finale>${isVenus()?"Voir l’apothéose":isMars()?"Voir la conclusion":"Ouvrir la transmission"}</button>`;
   else if(!chapter){const cost=finalCost(),mastery=finaleMastery(),title=isVenus()?"👑 Trône du Crépuscule":isMars()?"❤️ Réacteur d’Éden martien":"☀️ Climatologue du Multivers";if(!mastery.ready)els.finalProject.innerHTML=`<strong>${title}</strong><p>Constellation incomplète : ${state.cycles} / ${mastery.requiredCycles} ${cycleName(true)} et ${state.dawnUpgrades.length} / ${mastery.requiredNodes} héritages inscrits.</p><button type="button" disabled>Prépare la Constellation</button>`;else els.finalProject.innerHTML=`<strong>${title}</strong><p>${isVenus()?"La construction ultime au cœur du crépuscule.":isMars()?"La construction ultime, enfouie sous Olympus Mons.":"La construction finale de cette météo."}</p><button type="button" data-build-final ${state.drops<cost?"disabled":""}>Construire · ${format(cost)} ◆</button>`}else els.finalProject.innerHTML="";
@@ -876,11 +928,12 @@ els.dawnTree.addEventListener("click",event=>{const button=event.target.closest(
 els.pathPicker.addEventListener("click",event=>{const button=event.target.closest("[data-path-choice]");if(button)selectPath(button.dataset.pathChoice)});
 els.pathTechList.addEventListener("click",event=>{const button=event.target.closest("[data-path-tech]");if(button)buyPathTech(button.dataset.pathTech)});
 els.projectList.addEventListener("click",event=>{const button=event.target.closest("[data-project]");if(button)buyProject(button.dataset.project)});
-els.bossCard.addEventListener("click",event=>{if(event.target.closest("[data-start-boss]"))startBoss()});
+els.bossCard.addEventListener("click",event=>{if(event.target.closest("[data-start-boss]"))startBoss();if(event.target.closest("[data-start-armada]"))startVenusArmada()});
 els.finalProject.addEventListener("click",event=>{if(event.target.closest("[data-build-final]"))buildFinal();if(event.target.closest("[data-open-finale]")){prepareFinale();els.finale.showModal()}});
 els.eventBanner.addEventListener("click",claimEvent);
 els.overdriveButton.addEventListener("click",toggleVenusOverdrive);
 els.venusConstructionList.addEventListener("click",event=>{const button=event.target.closest("[data-venus-project]");if(button)startVenusConstruction(button.dataset.venusProject)});
+els.venusArmadaButton.addEventListener("click",startVenusArmada);
 els.languageButton.addEventListener("click",()=>{els.languageMenu.hidden=!els.languageMenu.hidden;refreshLanguagePicker()});
 els.languageMenu.addEventListener("click",event=>{const button=event.target.closest("[data-language]");if(!button)return;els.languageMenu.hidden=true;setLanguage(button.dataset.language)});
 document.addEventListener("click",event=>{if(!event.target.closest(".language-picker")&&!els.languageMenu.hidden){els.languageMenu.hidden=true;refreshLanguagePicker()}});

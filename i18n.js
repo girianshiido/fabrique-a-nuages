@@ -28,6 +28,17 @@ Système vénusien|Venus system
 Surcadence ×25|Overdrive ×25
 Corrosion|Corrosion
 Grands chantiers|Great works
+Chantier de rattrapage|Catch-up works
+Armada d’Aphrodite|Aphrodite Armada
+Assemble les derniers aérostats civils sans attendre une nouvelle Élévation.|Assemble the last civil aerostats without waiting for a new Elevation.
+Lancer l’Armada|Launch the Armada
+Armada achevée|Armada completed
+Les cent mille aérostats civils ont rejoint les cités du crépuscule.|One hundred thousand civil aerostats have joined the twilight cities.
+Progression hors ligne à 50 %.|50% progress while offline.
+L’Armada d’Aphrodite se révèle à 90 k aérostats.|Aphrodite Armada unlocks at 90k aerostats.
+L’Armada assemble les derniers aérostats civils.|The Armada is assembling the last civil aerostats.
+Armada d’Aphrodite achevée|Aphrodite Armada completed
+Cent mille aérostats — l’Armada rejoint les cités !|One hundred thousand aerostats — the Armada joins the cities!
 Cette ère|This era
 Depuis l’origine|All time
 Temps de jeu|Play time
@@ -913,6 +924,12 @@ Synchronisation…|Synchronising…
     [/^Réussites : (.+) · \+(.+) % production$/,"Successes: $1 · +$2% production"],
     [/^Réserve : (.+) · (.+) s\. Il faudra aussi (.+) (.+)\.$/,"Reserve: $1 · $2 s. You must also complete $3 $4."],
     [/^(.+) \/ 100 k aérostats vénusiens déployés sur l’ensemble des Élévations\.$/,"$1 / 100 k Venusian aerostats deployed across all Elevations."],
+    [/^(.+) \/ 100 k aérostats · (.+) restants$/,"$1 / 100 k aerostats · $2 remaining"],
+    [/^Coût : (.+) lumens · (.+)\. Progression hors ligne à 50 %\.$/,"Cost: $1 lumens · $2. 50% progress while offline."],
+    [/^Armada en construction · (.+) aérostats civils assemblés\. Démarre sous 10 % de corrosion et coupe après 60 % : −(.+) s\.$/,"Armada under construction · $1 civil aerostats assembled. Start below 10% corrosion and stop after 60%: −$2 s."],
+    [/^Armada d’Aphrodite en construction · (.+)$/,"Aphrodite Armada under construction · $1"],
+    [/^Lancer l’Armada · (.+) ◆$/,"Launch the Armada · $1 ◆"],
+    [/^Surcadence maîtrisée — Armada accélérée de (.+) s !$/,"Controlled overdrive — Armada accelerated by $1 s!"],
     [/^Jalon accompli : (.+)$/,"Milestone achieved: $1"],
     [/^(Le phénomène-boss|La tempête-boss) s’est dissipé(?:e)?\. Prépare une nouvelle tentative\.$/,"$1 has dissipated. Prepare a new attempt."],
     [/^Phase (.+) : la tempête se renforce !$/,"Phase $1: the storm intensifies!"],
