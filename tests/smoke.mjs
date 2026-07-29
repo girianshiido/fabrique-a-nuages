@@ -165,9 +165,11 @@ assert.equal(unitMultiplier(units[0])>=PIONEER_SUPER_POWER**2,true,"Chaque tranc
 assert.equal(format(1e63).includes("Vg"),true,"Les ressources au-delà de 1e62 doivent garder une unité lisible");
 assert.equal(format(1e123),"1.00 Qag","1e123 doit commencer la famille des quadragintillions");
 assert.equal(format(1e140),"100 Qiqag","L’objectif final de Vénus doit conserver une unité lisible");
+assert.equal(format(1e150),"1.00 Noqag","L’échelle étendue doit nommer les valeurs jusqu’à 1e150");
 GameI18N.locale="en";
 assert.equal(format(1e123),"1.00 Qag","La version anglaise doit nommer 1e123");
 assert.equal(format(1e140),"100 Qiqag","La version anglaise doit nommer l’objectif final");
+assert.equal(format(1e150),"1.00 Noqag","La version anglaise doit nommer 1e150");
 GameI18N.locale="fr";
 state.owned.dust_scoop=0;state.upgrades=[];
 assert.equal(unitMilestonePower(units[28],0),1000,"Les automates colossaux doivent commencer par un palier ×1000");
