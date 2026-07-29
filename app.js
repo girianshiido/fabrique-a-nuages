@@ -299,7 +299,7 @@ const achievements = [
 function configurePlanet(planet){const venus=planet==="venus",mars=planet==="mars";units=venus?venusUnits:mars?marsUnits:earthUnits;MILESTONES=venus?VENUS_MILESTONES:mars?MARS_MILESTONES:EARTH_MILESTONES;MILESTONE_NAMES=venus?VENUS_MILESTONE_NAMES:mars?MARS_MILESTONE_NAMES:EARTH_MILESTONE_NAMES;expeditionChapters=venus?venusExpeditionChapters:mars?marsExpeditionChapters:earthExpeditionChapters}
 const initialOwned = (planet="earth") => Object.fromEntries((planet==="venus"?venusUnits:planet==="mars"?marsUnits:earthUnits).map(u=>[u.id,0]));
 const initialState = (planet="earth") => ({
-  planet,marsUnlocked:planet!=="earth",venusUnlocked:planet==="venus",earthLegacy:null,marsLegacy:null,economyVersion:ECONOMY_VERSION,marsUnitsBuilt:0,venusUnitsBuilt:0,venusOverdrive:false,venusCorrosion:0,venusCooldownUntil:0,venusConstructions:[],venusBuild:null,drops:0,runTotal:0,planetTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(planet),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],currentPath:null,pendingPath:null,pathUpgrades:[],projects:[],relics:{storm:0,engineer:0,chrono:0},expedition:[],activeBoss:null,finalBuilt:false,unlockedAchievements:[],newGamePlus:0,settings:{effects:true,language:"fr"},
+  planet,marsUnlocked:planet!=="earth",venusUnlocked:planet==="venus",earthLegacy:null,marsLegacy:null,economyVersion:ECONOMY_VERSION,marsUnitsBuilt:0,venusUnitsBuilt:0,venusOverdrive:false,venusCorrosion:0,venusCooldownUntil:0,venusConstructions:[],venusBuild:null,drops:0,runTotal:0,planetTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(planet),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],currentPath:null,pendingPath:null,pathUpgrades:[],projects:[],relics:{storm:0,engineer:0,chrono:0},expedition:[],activeBoss:null,contractRecovery:{},lastFailedContractId:null,finalBuilt:false,unlockedAchievements:[],newGamePlus:0,settings:{effects:true,language:"fr"},
   activeEvent:null,nextEventAt:Date.now()+60000,contract:null,nextContractAt:Date.now()+6000,
   buyMode:"1",sound:true,startedAt:Date.now(),runStartedAt:Date.now(),lastTick:Date.now(),savedAt:Date.now(),
   stats:{clicks:0,unitsBought:0,upgradesBought:0,bestPps:0,offlineEarned:0,contractsCompleted:0,contractsFailed:0,eventsCaptured:0,overdrives:0}
@@ -554,17 +554,21 @@ function buyAllAvailableUpgrades(event){
 }
 function checkCrossedMilestones(unit,before,after){MILESTONES.forEach(m=>{if(before<m&&after>=m)achievement(`${unit.name} : cap des ${format(m)}`)})}
 
-function contractTarget(template){
-  const tier=state.stats.contractsCompleted;
+function contractTarget(template,tier=state.stats.contractsCompleted){
   if(template.metric==="clicks")return Math.min(500,20+tier*3);
   if(template.metric==="units")return 3+Math.floor(tier/2);
   return Math.max(100,stableProduction()*Math.max(25,35+tier*8));
 }
 function contractDuration(template,target){return template.metric==="clicks"?Math.min(100,Math.max(30,Math.ceil(target/5))):template.time}
+function contractRecoveryLevel(id){return Math.max(0,Number(state.contractRecovery?.[id])||0)}
+function nextContractTemplate(){
+  const start=state.stats.contractsCompleted%contractTemplates.length,blocked=state.lastFailedContractId;
+  return contractTemplates.find((_,offset)=>contractTemplates[(start+offset)%contractTemplates.length].id!==blocked)||contractTemplates[start];
+}
 function makeContract(){
-  const template=contractTemplates[state.stats.contractsCompleted%contractTemplates.length],target=contractTarget(template);
+  const template=nextContractTemplate(),recovery=contractRecoveryLevel(template.id)>0,tier=Math.max(0,state.stats.contractsCompleted-(recovery?contractTemplates.length:0)),target=contractTarget(template,tier);
   const duration=contractDuration(template,target);
-  state.contract={id:template.id,target,progress:0,startedAt:now(),expiresAt:now()+duration*1000};state.nextContractAt=0;
+  state.contract={id:template.id,target,progress:0,startedAt:now(),expiresAt:now()+duration*1000,recovery,rewardScale:recovery?.7:1};state.contractRecovery={...(state.contractRecovery||{}),[template.id]:Math.max(0,contractRecoveryLevel(template.id)-1)};state.lastFailedContractId=null;state.nextContractAt=0;
   toast(`Nouveau contrat : ${template.name}`);render(true);save();
 }
 function recordContractProgress(metric,amount){
@@ -572,7 +576,7 @@ function recordContractProgress(metric,amount){
   contract.progress=Math.min(contract.target,contract.progress+amount);
   if(contract.progress>=contract.target)completeContract();
 }
-function contractReward(){return Math.max(150,stableProduction()*60*(state.stats.contractsCompleted+1))*dawnEffect("contractReward",1)*pathEffect("contract",1)}
+function contractReward(contract=state.contract){return Math.max(150,stableProduction()*60*(state.stats.contractsCompleted+1))*dawnEffect("contractReward",1)*pathEffect("contract",1)*(contract?.rewardScale??1)}
 function rebalanceLegacyEconomy(){
   if(state.economyVersion>=ECONOMY_VERSION)return;
   if(state.economyVersion<2&&isMars()&&state.contract?.id==="drops"){
@@ -598,7 +602,7 @@ function completeContract(){
 function updateContract(){
   if(!state.contract&&now()>=state.nextContractAt)makeContract();
   if(state.contract&&state.contract.expiresAt<=now()){
-    state.stats.contractsFailed++;state.contract=null;state.nextContractAt=now()+9000;toast("Contrat expiré — le prochain arrive bientôt.");save();
+    const failed=state.contract;state.stats.contractsFailed++;state.contract=null;state.contractRecovery={...(state.contractRecovery||{}),[failed.id]:Math.max(1,contractRecoveryLevel(failed.id))};state.lastFailedContractId=failed.id;state.nextContractAt=now()+9000;toast("Objectif raté — le prochain sera d’un type différent.");save();
   }
 }
 function startRareEvent(){
@@ -735,7 +739,7 @@ function renderEvent(){
 }
 function renderContract(){
   const contract=state.contract;if(!contract){els.contractTitle.textContent=isVenus()?"Nouvelle traversée en préparation":isMars()?"Nouvelle mission en préparation":"Nouveau front en préparation";els.contractDescription.textContent=isVenus()?"La prochaine mission atmosphérique arrive sous peu.":isMars()?"La prochaine mission coloniale arrive sous peu.":"Le prochain contrat météo arrive sous peu.";els.contractFill.style.width="0%";els.contractTimer.textContent="—";els.contractReward.textContent=`Réussites : ${state.stats.contractsCompleted} · +${(contractMultiplier()-1)*100|0} % production`;return}
-  const template=contractTemplates.find(item=>item.id===contract.id),seconds=Math.max(0,(contract.expiresAt-now())/1000),progress=Math.min(100,contract.progress/contract.target*100),marsNames={clicks:"Pulsation manuelle",drops:"Réserve de régolithe",units:"Déploiement colonial"},marsDescriptions={clicks:"Effectue {target} extractions manuelles avant la fin",drops:"Extrais {target} grains avant la fin",units:"Déploie {target} machines avant la fin"},venusNames={clicks:"Impulsion héliostatique",drops:"Réserve lumineuse",units:"Lancement d’aérostats"},venusDescriptions={clicks:"Effectue {target} captations manuelles avant la fin",drops:"Capture {target} lumens avant la fin",units:"Déploie {target} machines flottantes avant la fin"},names=isVenus()?venusNames:isMars()?marsNames:null,descriptions=isVenus()?venusDescriptions:isMars()?marsDescriptions:null;els.contractTitle.textContent=`${template.icon} ${names?names[template.id]:template.name}`;els.contractDescription.textContent=(descriptions?descriptions[template.id]:template.description).replace("{target}",template.metric==="drops"?format(contract.target):format(Math.ceil(contract.target)));els.contractFill.style.width=`${progress}%`;els.contractTimer.textContent=`${seconds.toFixed(0)} s`;els.contractReward.textContent=`${format(contract.progress)} / ${format(contract.target)} · +${format(contractReward())} ${resourceName()}`;
+  const template=contractTemplates.find(item=>item.id===contract.id),seconds=Math.max(0,(contract.expiresAt-now())/1000),progress=Math.min(100,contract.progress/contract.target*100),marsNames={clicks:"Pulsation manuelle",drops:"Réserve de régolithe",units:"Déploiement colonial"},marsDescriptions={clicks:"Effectue {target} extractions manuelles avant la fin",drops:"Extrais {target} grains avant la fin",units:"Déploie {target} machines avant la fin"},venusNames={clicks:"Impulsion héliostatique",drops:"Réserve lumineuse",units:"Lancement d’aérostats"},venusDescriptions={clicks:"Effectue {target} captations manuelles avant la fin",drops:"Capture {target} lumens avant la fin",units:"Déploie {target} machines flottantes avant la fin"},names=isVenus()?venusNames:isMars()?marsNames:null,descriptions=isVenus()?venusDescriptions:isMars()?marsDescriptions:null,recoveryNote=contract.recovery?" · Objectif assoupli après échec":"",rewardNote=contract.rewardScale<1?" · récompense ×70 %":"";els.contractTitle.textContent=`${template.icon} ${names?names[template.id]:template.name}`;els.contractDescription.textContent=(descriptions?descriptions[template.id]:template.description).replace("{target}",template.metric==="drops"?format(contract.target):format(Math.ceil(contract.target)))+recoveryNote;els.contractFill.style.width=`${progress}%`;els.contractTimer.textContent=`${seconds.toFixed(0)} s`;els.contractReward.textContent=`${format(contract.progress)} / ${format(contract.target)} · +${format(contractReward())} ${resourceName()}${rewardNote}`;
 }
 function renderDawnTree(){
   els.dawnBalance.textContent=dawnBalance();els.dawnSpent.textContent=`${state.dawnSpent} dépensée${state.dawnSpent>1?"s":""}`;

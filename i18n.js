@@ -813,6 +813,9 @@ Production hors ligne vérifiée en UTC|Offline production verified in UTC
 Réseau indisponible : heure de l’appareil utilisée|Network unavailable: device time used
 Élévation|Elevation
 Contrat expiré — le prochain arrive bientôt.|Contract expired — the next one arrives soon.
+Objectif raté — le prochain sera d’un type différent.|Objective failed — the next one will be of a different type.
+Objectif assoupli après échec|Eased after a failed attempt
+récompense ×70 %|reward ×70%
 Le phénomène-boss|The boss phenomenon
 La tempête-boss|The storm boss
 Phénomène-boss|Boss phenomenon
@@ -926,6 +929,7 @@ Synchronisation…|Synchronising…
     [/^(.+) installée !$/,"$1 installed!"],
     [/^(.+) : cap des (.+)$/,"$1: milestone $2"],
     [/^Nouveau contrat : (.+)$/,"New contract: $1"],
+    [/^(.+) · récompense ×70 %$/,"$1 · reward ×70%"],
     [/^Contrat réussi : \+(.+) (.+)$/,"Contract completed: +$1 $2"],
     [/^Expédition : (.+)$/,"Expedition: $1"],
     [/^(.+) achevé : relique obtenue$/,"$1 completed: relic acquired"],
@@ -936,15 +940,15 @@ Synchronisation…|Synchronising…
     [/^(.+) accomplis$/,"$1 completed"],[/^Prochaine Élévation$/,"Next Elevation"],[/^Prochain Sol$/,"Next Sol"],[/^Prochain cycle$/,"Next cycle"],
     [/^(.+) disponible(s?)$/,"$1 available"],[/^(.+) dépensée(s?)$/,"$1 spent"],
     [/^Construction · (.+)$/,"Construction · $1"],[/^Nécessite (.+)$/,"Requires $1"],
-    [/^Effectue (.+) captations manuelles avant la fin$/,"Perform $1 manual captures before time runs out"],
-    [/^Capture (.+) lumens avant la fin$/,"Capture $1 lumens before time runs out"],
-    [/^Déploie (.+) machines flottantes avant la fin$/,"Deploy $1 floating machines before time runs out"],
-    [/^Effectue (.+) extractions manuelles avant la fin$/,"Perform $1 manual extractions before time runs out"],
-    [/^Extrais (.+) grains avant la fin$/,"Extract $1 grains before time runs out"],
-    [/^Déploie (.+) machines avant la fin$/,"Deploy $1 machines before time runs out"],
-    [/^Condense (.+) fois avant la fin$/,"Perform $1 condensations before time runs out"],
-    [/^Produis (.+) gouttes avant la fin$/,"Produce $1 drops before time runs out"],
-    [/^Achète (.+) automates avant la fin$/,"Buy $1 machines before time runs out"]
+    [/^Effectue (.+) captations manuelles avant la fin( · Objectif assoupli après échec)?$/,"Perform $1 manual captures before time runs out$2"],
+    [/^Capture (.+) lumens avant la fin( · Objectif assoupli après échec)?$/,"Capture $1 lumens before time runs out$2"],
+    [/^Déploie (.+) machines flottantes avant la fin( · Objectif assoupli après échec)?$/,"Deploy $1 floating machines before time runs out$2"],
+    [/^Effectue (.+) extractions manuelles avant la fin( · Objectif assoupli après échec)?$/,"Perform $1 manual extractions before time runs out$2"],
+    [/^Extrais (.+) grains avant la fin( · Objectif assoupli après échec)?$/,"Extract $1 grains before time runs out$2"],
+    [/^Déploie (.+) machines avant la fin( · Objectif assoupli après échec)?$/,"Deploy $1 machines before time runs out$2"],
+    [/^Condense (.+) fois avant la fin( · Objectif assoupli après échec)?$/,"Perform $1 condensations before time runs out$2"],
+    [/^Produis (.+) gouttes avant la fin( · Objectif assoupli après échec)?$/,"Produce $1 drops before time runs out$2"],
+    [/^Achète (.+) automates avant la fin( · Objectif assoupli après échec)?$/,"Buy $1 machines before time runs out$2"]
   ];
   const dynamic=value=>{
     if(exact[value])return exact[value];
