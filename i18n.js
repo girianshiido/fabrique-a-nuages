@@ -969,7 +969,7 @@ Synchronisation…|Synchronising…
     [/^Capture (.+) lumens avant la fin( · Objectif assoupli après échec)?$/,"Capture $1 lumens before time runs out$2"],
     [/^Déploie (.+) machines flottantes avant la fin( · Objectif assoupli après échec)?$/,"Deploy $1 floating machines before time runs out$2"],
     [/^Maîtrise (.+) surcadences avant la fin( · Objectif assoupli après échec)?$/,"Master $1 overdrives before time runs out$2"],
-    [/^Réseau logistique actif : production permanente ×(.+)\. Distillation de Maxwell : production ×(.+), doublée toutes les 10 minutes de jeu actif\.$/,"Logistics network active: ×$1 permanent production. Maxwell Distillation: ×$2 production, doubled every 10 minutes of active play."],
+    [/^Réseau logistique actif : production permanente ×(.+)\. Distillation de Maxwell : production ×(.+), doublée toutes les (.+) minutes de jeu actif\.$/,"Logistics network active: ×$1 permanent production. Maxwell Distillation: ×$2 production, doubled every $3 minutes of active play."],
     [/^Prochaine alchimie · (.+)$/,"Next alchemy · $1"],
     [/^Distillation de Maxwell (.+) — production ×(.+) !$/,"Maxwell Distillation $1 — ×$2 production!"],
     [/^Effectue (.+) extractions manuelles avant la fin( · Objectif assoupli après échec)?$/,"Perform $1 manual extractions before time runs out$2"],

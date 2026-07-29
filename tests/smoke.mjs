@@ -258,10 +258,12 @@ assert.equal(state.venusArmada.completed,true,"Le chantier achevé doit rester m
 assert.equal(Object.values(state.owned).reduce((sum,count)=>sum+count,0),producingAerostats,"Les aérostats civils ne doivent pas gonfler la production");
 assert.equal(permanentMultiplier()/multiplierBeforeArmadaNetwork,VENUS_ARMADA_NETWORK_POWER,"Les 100 000 aérostats doivent activer rétroactivement le réseau logistique");
 state.venusAlchemySeconds=VENUS_ALCHEMY_INTERVAL-1;state.venusAlchemyLevel=0;advanceVenusAlchemy(1);
-assert.equal(state.venusAlchemyLevel,1,"Dix minutes de jeu actif doivent achever une distillation");
+assert.equal(state.venusAlchemyLevel,1,"Deux minutes de jeu actif doivent achever une distillation");
 assert.equal(venusAlchemyMultiplier(),2,"La première distillation doit doubler la production");
+state.venusAlchemySeconds=VENUS_ALCHEMY_INTERVAL*4;advanceVenusAlchemy(.01);
+assert.equal(state.venusAlchemyLevel,5,"Le temps chargé avec l’ancien intervalle doit accorder tous les doublements correspondants");
 document.hidden=true;advanceVenusAlchemy(VENUS_ALCHEMY_INTERVAL);document.hidden=false;
-assert.equal(state.venusAlchemyLevel,1,"Un onglet masqué ne doit pas charger artificiellement la distillation");
+assert.equal(state.venusAlchemyLevel,5,"Un onglet masqué ne doit pas charger artificiellement la distillation");
 state.stats.contractsCompleted=24;state.contractCursor=2;state.contract=null;makeContract();renderContract();
 assert.equal(state.contract.target,2,"La traversée tardive doit demander deux stabilisations et non des achats ruineux");
 assert.match(els.contractTitle.textContent,/Stabilisation d’armada/,"La traversée tardive doit annoncer clairement la nouvelle mécanique");

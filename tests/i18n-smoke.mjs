@@ -48,7 +48,7 @@ const cases = [
   ["Stabilisation d’armada", "Armada stabilization"],
   ["Maîtrise 2 surcadences avant la fin · Objectif assoupli après échec", "Master 2 overdrives before time runs out · Eased after a failed attempt"],
   ["Surcadence maîtrisée — stabilisation de l’Armada enregistrée !", "Overdrive mastered — Armada stabilization recorded!"],
-  ["Réseau logistique actif : production permanente ×1.00 Qa. Distillation de Maxwell : production ×8, doublée toutes les 10 minutes de jeu actif.", "Logistics network active: ×1.00 Qa permanent production. Maxwell Distillation: ×8 production, doubled every 10 minutes of active play."],
+  ["Réseau logistique actif : production permanente ×1.00 Qa. Distillation de Maxwell : production ×8, doublée toutes les 2 minutes de jeu actif.", "Logistics network active: ×1.00 Qa permanent production. Maxwell Distillation: ×8 production, doubled every 2 minutes of active play."],
   ["Prochaine alchimie · 8 min 14 s", "Next alchemy · 8 min 14 s"],
   ["Distillation de Maxwell 3 — production ×8 !", "Maxwell Distillation 3 — ×8 production!"],
   ["Couronne requise", "Crown required"],
