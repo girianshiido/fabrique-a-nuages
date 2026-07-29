@@ -163,6 +163,12 @@ assert.equal(pioneerSuper.description.includes("7.78 M"),true,"Le 500e pionnier 
 state.owned.dust_scoop=1000;state.upgrades.push(pioneerSuperUpgradeId(units[0],500),pioneerSuperUpgradeId(units[0],1000));
 assert.equal(unitMultiplier(units[0])>=PIONEER_SUPER_POWER**2,true,"Chaque tranche de 500 pionniers doit cumuler une nouvelle résonance");
 assert.equal(format(1e63).includes("Vg"),true,"Les ressources au-delà de 1e62 doivent garder une unité lisible");
+assert.equal(format(1e123),"1.00 Qag","1e123 doit commencer la famille des quadragintillions");
+assert.equal(format(1e140),"100 Qiqag","L’objectif final de Vénus doit conserver une unité lisible");
+GameI18N.locale="en";
+assert.equal(format(1e123),"1.00 Qag","La version anglaise doit nommer 1e123");
+assert.equal(format(1e140),"100 Qiqag","La version anglaise doit nommer l’objectif final");
+GameI18N.locale="fr";
 state.owned.dust_scoop=0;state.upgrades=[];
 assert.equal(unitMilestonePower(units[28],0),1000,"Les automates colossaux doivent commencer par un palier ×1000");
 const colossus=units.find(unit=>unit.id==="ares_colossus"),firstColossusCost=unitCost(colossus,1,0),postCapColossusCost=unitCost(colossus,1,1);
