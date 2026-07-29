@@ -299,7 +299,7 @@ const achievements = [
 function configurePlanet(planet){const venus=planet==="venus",mars=planet==="mars";units=venus?venusUnits:mars?marsUnits:earthUnits;MILESTONES=venus?VENUS_MILESTONES:mars?MARS_MILESTONES:EARTH_MILESTONES;MILESTONE_NAMES=venus?VENUS_MILESTONE_NAMES:mars?MARS_MILESTONE_NAMES:EARTH_MILESTONE_NAMES;expeditionChapters=venus?venusExpeditionChapters:mars?marsExpeditionChapters:earthExpeditionChapters}
 const initialOwned = (planet="earth") => Object.fromEntries((planet==="venus"?venusUnits:planet==="mars"?marsUnits:earthUnits).map(u=>[u.id,0]));
 const initialState = (planet="earth") => ({
-  planet,marsUnlocked:planet!=="earth",venusUnlocked:planet==="venus",earthLegacy:null,marsLegacy:null,economyVersion:ECONOMY_VERSION,marsUnitsBuilt:0,venusUnitsBuilt:0,venusOverdrive:false,venusCorrosion:0,venusCooldownUntil:0,venusConstructions:[],venusBuild:null,drops:0,runTotal:0,planetTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(planet),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],currentPath:null,pendingPath:null,pathUpgrades:[],projects:[],relics:{storm:0,engineer:0,chrono:0},expedition:[],activeBoss:null,contractRecovery:{},lastFailedContractId:null,finalBuilt:false,unlockedAchievements:[],newGamePlus:0,settings:{effects:true,language:"fr"},
+  planet,marsUnlocked:planet!=="earth",venusUnlocked:planet==="venus",earthLegacy:null,marsLegacy:null,economyVersion:ECONOMY_VERSION,marsUnitsBuilt:0,venusUnitsBuilt:0,venusOverdrive:false,venusCorrosion:0,venusCooldownUntil:0,venusConstructions:[],venusBuild:null,drops:0,runTotal:0,planetTotal:0,lifetime:0,pressure:0,rainUntil:0,owned:initialOwned(planet),upgrades:[],cycles:0,dawns:0,dawnSpent:0,dawnUpgrades:[],currentPath:null,pendingPath:null,pathUpgrades:[],projects:[],relics:{storm:0,engineer:0,chrono:0},expedition:[],activeBoss:null,contractRecovery:{},contractCursor:0,finalBuilt:false,unlockedAchievements:[],newGamePlus:0,settings:{effects:true,language:"fr"},
   activeEvent:null,nextEventAt:Date.now()+60000,contract:null,nextContractAt:Date.now()+6000,
   buyMode:"1",sound:true,startedAt:Date.now(),runStartedAt:Date.now(),lastTick:Date.now(),savedAt:Date.now(),
   stats:{clicks:0,unitsBought:0,upgradesBought:0,bestPps:0,offlineEarned:0,contractsCompleted:0,contractsFailed:0,eventsCaptured:0,overdrives:0}
@@ -335,9 +335,14 @@ function load(){
     const migratedUpgrades=[...new Set((saved.upgrades||[]).map(id=>legacyMap[id]||id).filter(id=>globalUpgrades.some(u=>u.id===id)||/^unit_[a-z_]+_\d+$/.test(id)||/^pioneer_[a-z_]+_\d+$/.test(id)))];
     const cycles=Number(saved.cycles)||0;
     const buyModes=["1","10","100","max"];
+    const savedStats={...fresh.stats,...saved.stats};
+    const activeContractIndex=contractTemplates.findIndex(template=>template.id===saved.contract?.id);
+    const failedContractIndex=contractTemplates.findIndex(template=>template.id===saved.lastFailedContractId);
+    const legacyContractCursor=activeContractIndex>=0?activeContractIndex:failedContractIndex>=0?(failedContractIndex+1)%contractTemplates.length:savedStats.contractsCompleted%contractTemplates.length;
+    const contractCursor=Number.isFinite(Number(saved.contractCursor))?Math.max(0,Math.floor(Number(saved.contractCursor)))%contractTemplates.length:legacyContractCursor;
     const legacyMarsUnits=planet==="mars"?Object.values({...fresh.owned,...saved.owned}).reduce((sum,count)=>sum+(Number(count)||0),0):0;
     const legacyVenusUnits=planet==="venus"?Object.values({...fresh.owned,...saved.owned}).reduce((sum,count)=>sum+(Number(count)||0),0):0;
-    return {...fresh,...saved,planet,economyVersion:Number(saved.economyVersion)||1,marsUnitsBuilt:Number(saved.marsUnitsBuilt)||legacyMarsUnits,venusUnitsBuilt:Number(saved.venusUnitsBuilt)||legacyVenusUnits,venusCorrosion:Math.max(0,Math.min(100,Number(saved.venusCorrosion)||0)),venusConstructions:Array.isArray(saved.venusConstructions)?saved.venusConstructions:[],venusBuild:saved.venusBuild&&typeof saved.venusBuild==="object"?saved.venusBuild:null,planetTotal:saved.planetTotal??(planet==="earth"?(saved.lifetime??legacyTotal):saved.runTotal??0),runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:{...fresh.stats,...saved.stats},cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[],currentPath:paths.some(path=>path.id===saved.currentPath)?saved.currentPath:null,pendingPath:null,pathUpgrades:Array.isArray(saved.pathUpgrades)?saved.pathUpgrades:[],projects:Array.isArray(saved.projects)?saved.projects:[],relics:{...fresh.relics,...saved.relics},expedition:Array.isArray(saved.expedition)?saved.expedition:[],activeBoss:normalizeBoss(saved.activeBoss),unlockedAchievements:Array.isArray(saved.unlockedAchievements)?saved.unlockedAchievements:[],newGamePlus:Number(saved.newGamePlus)||0,settings:{...fresh.settings,...saved.settings},buyMode:buyModes.includes(saved.buyMode)?saved.buyMode:fresh.buyMode};
+    return {...fresh,...saved,planet,economyVersion:Number(saved.economyVersion)||1,marsUnitsBuilt:Number(saved.marsUnitsBuilt)||legacyMarsUnits,venusUnitsBuilt:Number(saved.venusUnitsBuilt)||legacyVenusUnits,venusCorrosion:Math.max(0,Math.min(100,Number(saved.venusCorrosion)||0)),venusConstructions:Array.isArray(saved.venusConstructions)?saved.venusConstructions:[],venusBuild:saved.venusBuild&&typeof saved.venusBuild==="object"?saved.venusBuild:null,planetTotal:saved.planetTotal??(planet==="earth"?(saved.lifetime??legacyTotal):saved.runTotal??0),runTotal:saved.runTotal??legacyTotal,lifetime:saved.lifetime??legacyTotal,owned:{...fresh.owned,...saved.owned},upgrades:migratedUpgrades,stats:savedStats,cycles,dawns:saved.dawns??cycles,dawnSpent:Number(saved.dawnSpent)||0,dawnUpgrades:Array.isArray(saved.dawnUpgrades)?saved.dawnUpgrades:[],currentPath:paths.some(path=>path.id===saved.currentPath)?saved.currentPath:null,pendingPath:null,pathUpgrades:Array.isArray(saved.pathUpgrades)?saved.pathUpgrades:[],projects:Array.isArray(saved.projects)?saved.projects:[],relics:{...fresh.relics,...saved.relics},expedition:Array.isArray(saved.expedition)?saved.expedition:[],activeBoss:normalizeBoss(saved.activeBoss),contractRecovery:saved.contractRecovery&&typeof saved.contractRecovery==="object"?saved.contractRecovery:{},contractCursor,lastFailedContractId:null,unlockedAchievements:Array.isArray(saved.unlockedAchievements)?saved.unlockedAchievements:[],newGamePlus:Number(saved.newGamePlus)||0,settings:{...fresh.settings,...saved.settings},buyMode:buyModes.includes(saved.buyMode)?saved.buyMode:fresh.buyMode};
   }catch{return initialState()}
 }
 function now(){return Date.now()+clockOffset}
@@ -560,19 +565,40 @@ function contractTarget(template,tier=state.stats.contractsCompleted){
   return Math.max(100,stableProduction()*Math.max(25,35+tier*8));
 }
 function contractDuration(template,target){return template.metric==="clicks"?Math.min(100,Math.max(30,Math.ceil(target/5))):template.time}
-function contractRecoveryLevel(id){return Math.max(0,Number(state.contractRecovery?.[id])||0)}
-function nextContractTemplate(){
-  const start=state.stats.contractsCompleted%contractTemplates.length,blocked=state.lastFailedContractId;
-  for(let offset=0;offset<contractTemplates.length;offset++){
-    const candidate=contractTemplates[(start+offset)%contractTemplates.length];
-    if(candidate.id!==blocked)return candidate;
+function contractRecoveryData(id){
+  const recovery=state.contractRecovery?.[id];
+  if(recovery&&typeof recovery==="object"){
+    return{tier:Math.max(0,Number(recovery.tier)||0),target:Math.max(0,Number(recovery.target)||0)};
   }
-  return contractTemplates[start];
+  return Number(recovery)>0?{tier:Math.max(0,Number(state.stats.contractsCompleted)||0),target:0}:null;
+}
+function contractTier(contract){
+  if(Number.isFinite(Number(contract?.tier)))return Math.max(0,Number(contract.tier));
+  return Math.max(0,state.stats.contractsCompleted-(contract?.recovery?contractTemplates.length:0));
+}
+function recoveryContractTarget(template,recovery,tier){
+  const normalTarget=contractTarget(template,tier);
+  if(!recovery.target)return normalTarget;
+  if(template.metric==="clicks")return Math.min(normalTarget,Math.max(20,recovery.target-9));
+  if(template.metric==="units")return Math.floor(Math.min(normalTarget,Math.max(3,recovery.target-2)));
+  const failedFactor=Math.max(25,35+recovery.tier*8),recoveryFactor=Math.max(25,35+tier*8);
+  return Math.max(100,Math.min(normalTarget,recovery.target*recoveryFactor/failedFactor));
+}
+function nextContractTemplate(){
+  const cursor=Math.max(0,Math.floor(Number(state.contractCursor)||0))%contractTemplates.length;
+  return contractTemplates[cursor];
+}
+function advanceContractCursor(id){
+  const currentIndex=contractTemplates.findIndex(template=>template.id===id);
+  state.contractCursor=(currentIndex>=0?currentIndex+1:(Number(state.contractCursor)||0)+1)%contractTemplates.length;
 }
 function makeContract(){
-  const template=nextContractTemplate(),recovery=contractRecoveryLevel(template.id)>0,tier=Math.max(0,state.stats.contractsCompleted-(recovery?contractTemplates.length:0)),target=contractTarget(template,tier);
+  const template=nextContractTemplate(),recoveryData=contractRecoveryData(template.id),recovery=Boolean(recoveryData);
+  const tier=recovery?Math.max(0,recoveryData.tier-contractTemplates.length):state.stats.contractsCompleted;
+  const target=recovery?recoveryContractTarget(template,recoveryData,tier):contractTarget(template,tier);
   const duration=contractDuration(template,target);
-  state.contract={id:template.id,target,progress:0,startedAt:now(),expiresAt:now()+duration*1000,recovery,rewardScale:recovery?.7:1};state.contractRecovery={...(state.contractRecovery||{}),[template.id]:Math.max(0,contractRecoveryLevel(template.id)-1)};state.lastFailedContractId=null;state.nextContractAt=0;
+  const remainingRecovery={...(state.contractRecovery||{})};delete remainingRecovery[template.id];
+  state.contract={id:template.id,target,tier,progress:0,startedAt:now(),expiresAt:now()+duration*1000,recovery,rewardScale:recovery?.7:1};state.contractRecovery=remainingRecovery;state.nextContractAt=0;
   toast(`Nouveau contrat : ${template.name}`);render(true);save();
 }
 function recordContractProgress(metric,amount){
@@ -601,12 +627,12 @@ function rebalanceLegacyEconomy(){
   state.economyVersion=ECONOMY_VERSION;
 }
 function completeContract(){
-  const reward=contractReward();state.contract=null;state.stats.contractsCompleted++;state.nextContractAt=now()+12000;addDrops(reward);achievement(`Contrat réussi : +${format(reward)} ${resourceName()}`);playTone(720,.2);save();
+  const completed=state.contract,reward=contractReward(completed);state.contract=null;state.stats.contractsCompleted++;advanceContractCursor(completed?.id);state.nextContractAt=now()+12000;addDrops(reward);achievement(`Contrat réussi : +${format(reward)} ${resourceName()}`);playTone(720,.2);save();
 }
 function updateContract(){
   if(!state.contract&&now()>=state.nextContractAt)makeContract();
   if(state.contract&&state.contract.expiresAt<=now()){
-    const failed=state.contract;state.stats.contractsFailed++;state.contract=null;state.contractRecovery={...(state.contractRecovery||{}),[failed.id]:Math.max(1,contractRecoveryLevel(failed.id))};state.lastFailedContractId=failed.id;state.nextContractAt=now()+9000;toast("Objectif raté — le prochain sera d’un type différent.");save();
+    const failed=state.contract,failedTier=contractTier(failed);state.stats.contractsFailed++;state.contract=null;state.contractRecovery={...(state.contractRecovery||{}),[failed.id]:{tier:failedTier,target:Math.max(0,Number(failed.target)||0)}};advanceContractCursor(failed.id);state.nextContractAt=now()+9000;toast("Objectif raté — le prochain sera d’un type différent.");save();
   }
 }
 function startRareEvent(){
