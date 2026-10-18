@@ -50,6 +50,20 @@ Au chargement, le jeu consulte une horloge UTC publique pour calculer le temps �
 - `app.js` : économie, sauvegarde et interactions
 - `icon.svg` : icône du site
 
+## Vérification
+
+Les tests de logique et de traduction ne nécessitent aucune dépendance supplémentaire :
+
+```sh
+node tests/smoke.mjs
+node tests/i18n-smoke.mjs
+node tests/performance-regressions.mjs
+```
+
+Avec Playwright et Chrome disponibles, `node tests/browser-performance.mjs` vérifie aussi les interactions mobiles, les changements de langue, les cartes conservées et le rechargement des sauvegardes sur les trois planètes. `PLAYWRIGHT_MODULE` permet d’indiquer le module Playwright installé et `BROWSER_CHANNEL` le canal Chromium à utiliser.
+
+Les mesures avant/après et leurs limites sont documentées dans [AUDIT-PERFORMANCES.md](AUDIT-PERFORMANCES.md).
+
 ## Licence
 
 Vous pouvez utiliser, modifier et publier ce prototype librement sous licence MIT.

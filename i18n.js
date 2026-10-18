@@ -992,19 +992,25 @@ Synchronisation…|Synchronising…
     rules.forEach(([pattern,replacement])=>out=out.replace(pattern,replacement));
     return out.replace(/\s+([:!?])/g,"$1");
   };
+  const translationCache=new Map();
   function english(value){
     if(typeof value!=="string")return value;
+    if(translationCache.has(value))return translationCache.get(value);
     const before=value.match(/^\s*/)?.[0]||"",after=value.match(/\s*$/)?.[0]||"",core=value.slice(before.length,value.length-after.length);
-    return before+dynamic(core)+after;
+    const translated=before+dynamic(core)+after;
+    if(translationCache.size>=1000)translationCache.delete(translationCache.keys().next().value);
+    translationCache.set(value,translated);return translated;
   }
   function translate(value){return locale==="en"?english(value):value}
-  function localize(){
+  function localize(root=document.body){
+    if(root===document.body){
     document.documentElement.lang=locale;document.body.dataset.language=locale;
     if(locale==="en"){if(!localize.titleFr||document.title!==english(localize.titleFr))localize.titleFr=document.title;document.title=english(localize.titleFr)}else if(localize.titleFr){if(document.title===english(localize.titleFr))document.title=localize.titleFr;else localize.titleFr=document.title}
     const description=document.querySelector("meta[name='description']");if(description){if(locale==="en"){if(!description.dataset.i18nFr||description.content!==english(description.dataset.i18nFr))description.dataset.i18nFr=description.content;description.content=english(description.dataset.i18nFr)}else if(description.dataset.i18nFr){if(description.content===english(description.dataset.i18nFr))description.content=description.dataset.i18nFr;else description.dataset.i18nFr=description.content}}
-    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:node=>["SCRIPT","STYLE"].includes(node.parentElement?.tagName)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+    }
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:node=>["SCRIPT","STYLE"].includes(node.parentElement?.tagName)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
     const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(node=>{if(locale==="en"){if(node.nodeValue!==node.i18nEn){node.i18nFr=node.nodeValue;node.i18nEn=english(node.i18nFr);node.nodeValue=node.i18nEn}}else if(node.i18nFr!=null){if(node.nodeValue===node.i18nEn)node.nodeValue=node.i18nFr;else{node.i18nFr=node.nodeValue;node.i18nEn=english(node.i18nFr)}}});
-    document.querySelectorAll("[aria-label],[title]").forEach(element=>{
+    root.querySelectorAll("[aria-label],[title]").forEach(element=>{
       const stored=element.__i18nAttributes??={};
       ["aria-label","title"].forEach(attribute=>{
         if(!element.hasAttribute(attribute))return;
